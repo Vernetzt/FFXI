@@ -4,13 +4,13 @@ version = "3.0"
 pName = player.name
 windower.add_to_chat(8,'----- Welcome back to your BLU.lua, '..pName..' -----')
 
--- We're RDM so we're using Carm legs.
+-- We're BLU so we're using Carm legs.
 runspeedslot = 'legs'
 
 --------------------------------------------------------------------------------------------------------------
 -- HUD STUFF -- TO BE EXTERNALIZED
 --------------------------------------------------------------------------------------------------------------
-meleeing = M('AUTO', 'ON', 'OFF')
+meleeing = M('OFF', 'AUTO', 'ON')
 lock = M('OFF', 'ON')
 mBurst = M(false)
 runspeed = M('OFF', 'ON')
@@ -333,15 +333,7 @@ function midcast(spell)
 
         -- Sanguine BBlade belt optim
         if spell.name == 'Sanguine Blade' then
-            -- Dark day and dark weather
-            if spell.element == world.day_element and spell.element == world.weather_element then
-                equip(sets.midcast.Obi)
-            -- Double dark weather aka Dynamis
-            elseif spell.element == world.weather_element and get_weather_intensity() == 2 then
-                equip(sets.midcast.Obi)
-            else
-                equip(sets.midcast.Orpheus)                
-            end
+            SashLogic(spell)
         end
 
     end
@@ -432,7 +424,10 @@ function idle()
         equip(sets.me.idle[idleModes.value])
         -- Checks MP for Fucho-no-Obi
         if player.mpp < 51 then
-            equip(sets.me.latent_refresh)          
+            if idleModes.value == 'eva' or meleeModes.value == 'eva' then
+            else
+                equip(sets.me.latent_refresh)          
+            end
         end       
     end
     equip({main = mainWeapon.current, sub = subWeapon.current})
@@ -540,15 +535,19 @@ function self_command(command)
                 if commandArgs[3] == 'TizTP' then
                     mainWeapon:set('Tizona')
                     subWeapon:set(TpBonus)
+                    idle()
                 elseif commandArgs[3] == 'TizNae' then
                     mainWeapon:set('Tizona')
                     subWeapon:set('Naegling')
+                    idle()
                 elseif commandArgs[3] == 'MaxKaja' then
                     mainWeapon:set('Maxentius')
                     subWeapon:set('Kaja Rod')
+                    idle()
                 elseif commandArgs[3] == 'MaxTP' then
                     mainWeapon:set('Maxentius')
                     subWeapon:set(TpBonus)
+                    idle()
                 end
 
                 idle()
@@ -564,6 +563,18 @@ function self_command(command)
                 matchsc:cycle()               
             end
             validateTextInformation()
+        end
+
+        if commandArgs[1] == 'ws' then
+            if commandArgs[2] == 'auto' then
+                if S{'Crocea Mors','Naegling'}:contains(player.equipment.main) then
+                    send_command('@input /ws "Savage Blade" <t>')
+                elseif S{'Maxentius'}:contains(player.equipment.main) then
+                    send_command('@input /ws "Black Halo" <t>')
+                elseif S{'Tauret'}:contains(player.equipment.main) then
+                    send_command('@input /ws "Evisceration" <t>')
+                end
+            end
         end
         
         if commandArgs[1]:lower() == 'scholar' then
@@ -650,20 +661,22 @@ end
 function autoDT(name,gain)
     local name2
     name2 = string.lower(name)
-    if S{"terror","petrification","sleep","stun"}:contains(name2) then
+    if S{"terror","petrification","sleep","stun",}:contains(name2) then
+        if gain then
+            if not (idleModes.value == 'eva' or meleeModes.value == 'eva') then
+                equip(sets.Utility.AutoDT)
+            end
+        else
+            idle()
+        end
+    elseif name2 == "doom" then
       if gain then
-        equip(sets.Utility.AutoDT)
-      else
-        idle()
-      end
-    elseif name2 == "Doom" then
-      if gain then
-          -- equip(sets.Utility.Doom)
+          equip(sets.Utility.Doom)
           send_command('@input /p Doomed')
-          -- disable('ring1','ring2','waist')
+          disable('ring1','ring2','waist','neck')
       else
         send_command('@input /p Doom is off')
-        -- enable('ring1','ring2','waist')
+        enable('ring1','ring2','waist','neck')
       end
     elseif name2 == "charm" then
       if gain then
@@ -674,7 +687,7 @@ function autoDT(name,gain)
     elseif name2 == "Mighty Guard" then
       if gain then
       else
-        -- send_command('gs c -cd Mighty Guard Lost!')
+        send_command('gs c -cd Mighty Guard Lost!')
       end
     end
 end

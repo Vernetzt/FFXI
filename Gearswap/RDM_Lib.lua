@@ -276,7 +276,7 @@ function midcast(spell)
     -- Nuking
     elseif spell.type == 'BlackMagic' then
     
-        if player.sub_job == 'NIN' or 'DNC' then
+        if player.sub_job == ('NIN' or 'DNC') then
             --   add_to_chat(322, 'RDM/NIN')
             if mBurst.value == true then
                 equip(sets.midcast.MB[nukeModes.current].DW)
@@ -364,6 +364,7 @@ function aftercast(spell)
 
     update_active_ja()
     updateDualWield()
+    updateTimers(spell)
     idle()
 
 end
@@ -433,6 +434,7 @@ function self_command(command)
      
     if #commandArgs:split(' ') >= 2 then
         commandArgs = T(commandArgs:split(' '))
+        
         
         if commandArgs[1] == 'toggle' then
             if commandArgs[2] == 'melee' then
@@ -529,22 +531,28 @@ function self_command(command)
                 if commandArgs[3] == 'NaeTP' then
                     mainWeapon:set('Naegling')
                     subWeapon:set(TpBonus)
+                    idle()
                 elseif commandArgs[3] == 'MaxTP' then
                     mainWeapon:set('Maxentius')
                     subWeapon:set(TpBonus)
+                    idle()
                 elseif commandArgs[3] == 'ZeroTP' then
                     mainWeapon:set('Aern Dagger')
                     subWeapon:set('Qutrub Knife')
-                    meleeModes:set('zeroTP')
+                    -- meleeModes:set('zeroTP')
+                    idle()
                 elseif commandArgs[3] == 'TauTP' then
                     mainWeapon:set('Tauret')
                     subWeapon:set(TpBonus)
+                    idle()
                 elseif commandArgs[3] == 'CroTau' then
                     mainWeapon:set('Crocea Mors')
                     subWeapon:set('Tauret')
+                    idle()
                 elseif commandArgs[3] == 'CroDay' then
                     mainWeapon:set('Crocea Mors')
                     subWeapon:set('Daybreak')
+                    idle()
                 end
                 
                 idle()
@@ -564,6 +572,18 @@ function self_command(command)
                 add_to_chat(322, 'Match SC: '..matchsc.value..'')
             end
             validateTextInformation()
+        end
+
+        if commandArgs[1] == 'ws' then
+            if commandArgs[2] == 'auto' then
+                if S{'Crocea Mors','Naegling'}:contains(player.equipment.main) then
+                    send_command('@input /ws "Savage Blade" <t>')
+                elseif S{'Maxentius'}:contains(player.equipment.main) then
+                    send_command('@input /ws "Black Halo" <t>')
+                elseif S{'Tauret'}:contains(player.equipment.main) then
+                    send_command('@input /ws "Evisceration" <t>')
+                end
+            end
         end
         
         if commandArgs[1]:lower() == 'scholar' then
@@ -654,15 +674,15 @@ function autoDT(name,gain)
       else
         idle()
       end
-    elseif name2 == "Doom" then
-      if gain then
-          -- equip(sets.Utility.Doom)
-          send_command('@input /p Doomed')
-          -- disable('ring1','ring2','waist')
-      else
-        send_command('@input /p Doom is off')
-        -- enable('ring1','ring2','waist')
-      end
+    elseif name2 == "doom" then
+        if gain then
+            equip(sets.Utility.Doom)
+            send_command('@input /p Doomed')
+            disable('ring1','ring2','waist','neck')
+        else
+          send_command('@input /p Doom is off')
+          enable('ring1','ring2','waist','neck')
+        end
     elseif name2 == "charm" then
       if gain then
           send_command('@input /p Charmed')
@@ -697,6 +717,24 @@ function autoTH(spell)
         -- Add "spells" you wish TH gear to equip on
         if S{"dispelga","diaga","circle blade","poisonga","aeolian edge"}:contains(spellname) then
             equip(sets.Utility.TH)
+        end
+    end
+end
+
+function updateTimers(spell)
+    if not spell.interrupted then
+        if spell.english == "Sleep II" then
+        --   send_command('wait 35;gs c -cd '..spell.name..': [Off In 10~55 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~45 Seconds!]')
+          send_command('timers create "Sleep II" 90 down')
+        elseif spell.english == "Sleep" then
+            --   send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
+            send_command('timers create "Sleep" 60 down')
+        elseif spell.english == "Break" then
+        --   send_command('wait 20;gs c -cd '..spell.name..': [Off In 10 Seconds!]')
+          send_command('timers create "Break" 30 down')
+        elseif spell.english == "Bind" then
+        -- send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
+          send_command('timers create "Bind" 60 down')
         end
     end
 end

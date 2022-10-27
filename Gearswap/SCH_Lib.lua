@@ -213,6 +213,9 @@ function midcast(spell)
         else
             equip(sets.midcast.nuking[nukeModes.current])
         end
+        if player.sub_job == ('NIN' or 'DNC') then
+            equip(sets.midcast.DW)
+        end
     elseif spell.type == 'Trust' then
         equip(sets.precast.casting)
     elseif spell.type == 'JobAbility' then
@@ -241,7 +244,10 @@ function midcast(spell)
 
     -- Obi / Orph Logic
     if spell.skill ~= 'Enhancing Magic' and spellMap ~= 'Helix' then
-        SashLogic(spell)
+        spellname = string.lower(spell.name)
+        if not S{"drain","aspir","aspir ii"}:contains(spellname) then
+            SashLogic(spell)
+        end
     end
 
     -- Dark based Helix gets "pixie hairpin +1"
@@ -525,15 +531,15 @@ function autoDT(name,gain)
       else
         idle()
       end
-    elseif name2 == "Doom" then
-      if gain then
-          -- equip(sets.Utility.Doom)
-          send_command('@input /p Doomed')
-          -- disable('ring1','ring2','waist')
-      else
-        send_command('@input /p Doom is off')
-        -- enable('ring1','ring2','waist')
-      end
+    elseif name2 == "charm" then
+        if gain then
+            equip(sets.Utility.Doom)
+            send_command('@input /p Doomed')
+            disable('ring1','ring2','waist','neck')
+        else
+          send_command('@input /p Doom is off')
+          enable('ring1','ring2','waist','neck')
+        end
     elseif name2 == "charm" then
       if gain then
           send_command('@input /p Charmed')
@@ -553,11 +559,9 @@ function forceDT()
     if flipforce == true then
         lastIdle = idleModes.value
         -- lastMelee = meleeModes.value
-        idleModes:set('flee')
-        -- meleeModes:set('dt')
+        -- idleModes:set('flee')
+        meleeModes:set('dt')
         flipforce = false
-    -- elseif testforce == true then
-    --     testforce = false
     else
         idleModes:set(lastIdle)
         -- meleeModes:set(lastMelee)
