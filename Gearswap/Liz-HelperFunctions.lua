@@ -25,7 +25,7 @@ function updateMB( mBurst )
 end
 
 
-function updateRunspeedGear( value , slot , pet)
+function updateRunspeedGear( value , slot , pet )
     if value == 'OFF' or value == 'AUTO' then
         validateTextInformation()
         enable(slot)
@@ -44,7 +44,7 @@ function updateRunspeedGear( value , slot , pet)
     validateTextInformation()
 end
 
-function lockMainHand( value , pet)   
+function lockMainHand( value , pet )   
     if value == 'ON' then
         disable('main','sub','ranged')
         validateTextInformation()
@@ -216,6 +216,7 @@ if autorunspeed then
             local pl = windower.ffxi.get_mob_by_index(player.index)
             if pl and pl.x and mov.x then
                 local movement = math.sqrt( (pl.x-mov.x)^2 + (pl.y-mov.y)^2 + (pl.z-mov.z)^2 ) > 0.1
+
 
                 if not midaction() then
                     if movement and not moving then
