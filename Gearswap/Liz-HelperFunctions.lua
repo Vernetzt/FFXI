@@ -470,22 +470,26 @@ end
 function EnspellCheck()
 	-- This only gets checked when wielding Crocea or Vitiation Sword.
 	-- Enspell matches double weather but bad day
-	if Buff['En-Weather'] and get_weather_intensity() == 2 and not Buff['En-BadDay'] then
+	if Buff['En-Weather'] and world.weather_intensity == 2 and not Buff['En-BadDay'] then
         equip(sets.midcast.Orpheus)
         equip(sets.midcast.AyanmoHands)
+        -- add_to_chat (60, 'Enspell = Double weather but bad day')
 	-- Enspell matches double weather and irrelevent day
-	elseif Buff['En-Weather'] and get_weather_intensity() == 2 then
+	elseif Buff['En-Weather'] and world.weather_intensity == 2 then
         equip(sets.midcast.Obi)
         equip(sets.midcast.AyanmoHands)
+        -- add_to_chat (60, 'Enspell = Double weather and irrelevent day')
     -- Enspell matches day AND weather
     elseif Buff['En-Weather'] and Buff['En-Day'] then
         equip(sets.midcast.Obi)
         equip(sets.midcast.AyanmoHands)
+        -- add_to_chat (60, 'Enspell = Day and weather')
     -- Enspell is there but doesnt match anything of note (single weather no day, day but no weather etc.)
     elseif Buff['Enspell'] then
         equip(sets.midcast.Orpheus)
         equip(sets.midcast.AyanmoHands)
-    end 
+        -- add_to_chat (60, 'Enspell = No match')
+    end
 end
 
 -- Get a spell mapping for the spell.
@@ -531,4 +535,33 @@ function get_current_strategem_count()
     local currentCharges = math.floor(maxStrategems - maxStrategems * stratsRecast / fullRechargeTime)
 
     return currentCharges
+end
+
+function updateDualWield()
+    if dualwield.value == 'AUTO' then
+        currentHaste = get_haste_value()
+    else
+        -- Defaulting for next use.
+        currentHaste = 30
+    end
+end
+
+function get_haste_value()
+    if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
+        (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
+        (buffactive[565] and buffactive.march == 2 and buffactive[580] and (buffactive[604] or buffactive[228])) ) then
+        -- 30% haste
+        HasteValue = 30
+        return HasteValue
+    elseif ( (buffactive[33] and (buffactive[580] or buffactive.march or buffactive[604] or buffactive[228])) or -- Flutter and Geo or march or MG or embrava
+            (buffactive[580] and (buffactive.march or buffactive[604] or buffactive[228])) or -- Geo and march or MG or embrava
+            (buffactive.march == 2 and (buffactive[604] or buffactive[228])) or -- March x2 and MG or Embrava
+            (buffactive[13] and (buffactive.march == 2 or buffactive[580]) and (buffactive[604] or buffactive[228])) ) then -- Slow, but likez the mad buffs 'n shiz, yo.
+        -- Capped Haste
+        HasteValue = 47
+        return HasteValue
+    else
+        HasteValue = 30
+        return HasteValue
+    end
 end
