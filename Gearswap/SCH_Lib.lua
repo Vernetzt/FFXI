@@ -136,23 +136,24 @@ function precast(spell)
     -- Moving on to other types of magic
     if spell.type == 'WhiteMagic' or spell.type == 'BlackMagic' or spell.type == 'Trust' then
      
+        
         -- Stoneskin Precast
         if spell.name == 'Stoneskin' then
-         
             windower.ffxi.cancel_buff(37)--[[Cancels stoneskin, not delayed incase you get a Quick Cast]]
             equip(sets.precast.stoneskin)
-             
+
+        elseif spell.target.type == 'SELF' and spell.name == 'Sneak' then
+            windower.ffxi.cancel_buff(71)--[[Cancels Sneak]]
+            equip(sets.precast.enhancing)
+
         -- Cure Precast
         elseif spell.name:match('Cure') or spell.name:match('Cura') then
          
-            equip(sets.precast.cure)         
+            equip(sets.precast.cure)    
         -- Enhancing Magic
-        elseif spell.skill == 'Magic' then
-         
-            equip(sets.precast.enhancing)            
-            if spell.name == 'Sneak' then
-                windower.ffxi.cancel_buff(71)--[[Cancels Sneak]]
-            end
+        elseif spell.skill == 'Enhancing Magic' then
+            equip(sets.precast.enhancing)
+
         else       
             -- For everything else we go with max fastcast
             equip(sets.precast.casting)                   
@@ -200,6 +201,12 @@ function midcast(spell)
             equip(sets.midcast.regen[regenModes.current])
         elseif spell.name:match('Aquaveil') then
             equip(sets.midcast.aquaveil)
+        elseif spell.name:match('Phalanx') then
+            if buffactive['addendum: black'] or buffactive['dark arts'] then          
+                equip(sets.midcast.phalanx.DA)
+            elseif buffactive['addendum: white'] or buffactive['light arts'] then
+                equip(sets.midcast.phalanx.LA)
+            end
         elseif spell.name:match('Stoneskin') then
             equip(sets.midcast.stoneskin)
         end
@@ -298,8 +305,12 @@ function idle()
                 equip(sets.me.idle[idleModes.value])               
             end
         -- We don't have sublimation ticking.
+        elseif meleeing.value == 'ON' then
+            equip(sets.me.idle[idleModes.value].locked)
+            -- add_to_chat(322, 'weapon locked')
         else
             equip(sets.me.idle[idleModes.value])             
+            -- add_to_chat(322, 'weapon not locked')
         end
     end
 
@@ -559,8 +570,8 @@ function forceDT()
     if flipforce == true then
         lastIdle = idleModes.value
         -- lastMelee = meleeModes.value
-        -- idleModes:set('flee')
-        meleeModes:set('dt')
+        idleModes:set('flee')
+        -- meleeModes:set('dt')
         flipforce = false
     else
         idleModes:set(lastIdle)

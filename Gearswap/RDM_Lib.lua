@@ -187,7 +187,7 @@ function precast(spell)
         elseif spell.skill == 'Enhancing Magic' then
          
             equip(sets.precast.enhancing)            
-            if spell.name == 'Sneak' then
+            if spell.target.type == 'SELF' and spell.name == 'Sneak' then
                 windower.ffxi.cancel_buff(71)--[[Cancels Sneak]]
             end
         else       
@@ -213,12 +213,20 @@ function midcast(spell)
     -- Curing
     if spell.name:match('Cure') or spell.name:match('Cura') then
         if spell.element == world.weather_element or spell.element == world.day_element then
-            equip(sets.midcast.cure.weather)
+            if spell.target.type == 'SELF' then
+                equip(sets.midcast.cure.weather.self)
+            else
+                equip(sets.midcast.cure.weather)
+            end
         else
-            equip(sets.midcast.cure.normal)
+            if spell.target.type == 'SELF' then
+                equip(sets.midcast.cure.self)
+            else
+                equip(sets.midcast.cure.normal)
+            end
         end
     elseif spell.name:match('Utsusemi') then       
-        -- equip(sets.midcast.utsu)
+        equip(sets.midcast.utsu)
     
     elseif spell.action_type == 'Ranged Attack' then
         equip(sets.midcast.RA)
@@ -303,6 +311,9 @@ function midcast(spell)
     
     elseif spell.type == 'Trust' then
         equip(sets.precast.casting)
+
+    elseif spell.type == 'JobAbility' then
+        equip(sets.me.idle.dt)
 
     -- Fail safe
     elseif spell.type ~= "WeaponSkill" then
@@ -396,6 +407,11 @@ function idle()
         if mainWeapon.value == "Crocea Mors" then
             EnspellCheck()
         end
+
+        if meleeModes.current == 'zeroTP' then
+            EnspellCheck()
+        end
+        
     else
         equip(sets.me.idle[idleModes.value])
         -- Checks MP for Fucho-no-Obi
@@ -531,28 +547,22 @@ function self_command(command)
                 if commandArgs[3] == 'NaeTP' then
                     mainWeapon:set('Naegling')
                     subWeapon:set(TpBonus)
-                    idle()
                 elseif commandArgs[3] == 'MaxTP' then
                     mainWeapon:set('Maxentius')
                     subWeapon:set(TpBonus)
-                    idle()
                 elseif commandArgs[3] == 'ZeroTP' then
                     mainWeapon:set('Aern Dagger')
                     subWeapon:set('Qutrub Knife')
                     -- meleeModes:set('zeroTP')
-                    idle()
                 elseif commandArgs[3] == 'TauTP' then
                     mainWeapon:set('Tauret')
                     subWeapon:set(TpBonus)
-                    idle()
                 elseif commandArgs[3] == 'CroTau' then
                     mainWeapon:set('Crocea Mors')
                     subWeapon:set('Tauret')
-                    idle()
                 elseif commandArgs[3] == 'CroDay' then
                     mainWeapon:set('Crocea Mors')
                     subWeapon:set('Daybreak')
-                    idle()
                 end
                 
                 idle()
@@ -644,25 +654,34 @@ end
 
 -- Checks if auto and then sets var for engage logic.
 -- Write better buff logic
-function updateDualWield()
-    if dualwield.value == 'AUTO' then
-        if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
-            (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
-            (buffactive[565] and buffactive.march == 2 and buffactive[580] and (buffactive[604] or buffactive[228])) ) then
-            -- 30% haste
-            currentHaste = 30
-        elseif ( (buffactive[33] and (buffactive[580] or buffactive.march or buffactive[604] or buffactive[228])) or -- Flutter and Geo or march or MG or embrava
-                (buffactive[580] and (buffactive.march or buffactive[604] or buffactive[228])) or -- Geo and march or MG or embrava
-                (buffactive.march == 2 and (buffactive[604] or buffactive[228])) or -- March x2 and MG or Embrava
-                (buffactive[13] and (buffactive.march == 2 or buffactive[580]) and (buffactive[604] or buffactive[228])) ) then -- Slow, but likez the mad buffs 'n shiz, yo.
-            -- Capped Haste?
-            currentHaste = 47
-        end
-    else
-        -- Defaulting for next use.
-        currentHaste = 30
-    end
-end
+-- function updateDualWield()
+--     if dualwield.value == 'AUTO' then
+--         if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
+--             (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
+--             (buffactive[565] and buffactive.march == 2 and buffactive[580] and (buffactive[604] or buffactive[228])) ) then
+--             -- 30% haste
+--             currentHaste = 30
+--         elseif ( (buffactive[33] and (buffactive[580] or buffactive.march or buffactive[604] or buffactive[228])) or -- Flutter and Geo or march or MG or embrava
+--                 (buffactive[580] and (buffactive.march or buffactive[604] or buffactive[228])) or -- Geo and march or MG or embrava
+--                 (buffactive.march == 2 and (buffactive[604] or buffactive[228])) or -- March x2 and MG or Embrava
+--                 (buffactive[13] and (buffactive.march == 2 or buffactive[580]) and (buffactive[604] or buffactive[228])) ) then -- Slow, but likez the mad buffs 'n shiz, yo.
+--             -- Capped Haste?
+--             currentHaste = 47
+--         end
+--     else
+--         -- Defaulting for next use.
+--         currentHaste = 30
+--     end
+-- end
+
+-- function updateDualWield()
+--     if dualwield.value == 'AUTO' then
+--         currentHaste=get_haste_value()
+--     else
+--         -- Defaulting for next use.
+--         currentHaste = 30
+--     end
+-- end
 
 function autoDT(name,gain)
     local name2
