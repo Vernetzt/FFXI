@@ -323,6 +323,15 @@ function midcast(spell)
         if spell.skill ~= 'Enhancing Magic' and spellMap ~= 'Helix' then
             SashLogic(spell)
         end
+
+        if spell.name:match('Fire') or spell.name:match('Blizzard') or spell.name:match('Aero') or spell.name:match('Stone') or spell.name:match('Thunder') or spell.name:match('Water') then
+            if idleModes.value == 'eva' or meleeModes.value == 'eva' then
+                equip(sets.midcast.BluEVA)
+            else 
+                equip(sets.midcast.nuking[nukeModes.current])
+                SashLogic(spell)
+            end
+        end
     
     -- Fail safe
     elseif spell.type ~= "WeaponSkill" then
