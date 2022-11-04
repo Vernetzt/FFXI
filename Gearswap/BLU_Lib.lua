@@ -264,6 +264,9 @@ function midcast(spell)
         elseif spell.name:match('Barrier Tusk') then
             equip(sets.midcast.phalanx)
 
+        elseif spell.name:match('Occultation') then
+            equip(sets.midcast.Occultation)
+
         elseif bluMap == 'BluBuff' then
             equip(sets.midcast.BluBuff)
             if Buff['Diffusion'] then
