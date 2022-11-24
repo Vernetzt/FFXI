@@ -131,7 +131,7 @@ WSbullet = "Chrono Bullet"
 MAbullet = "Chrono Bullet"
 QDbullet = "Chrono Bullet"
 no_shoot_ammo = S{"Animikii Bullet", "Hauksbok Bullet"}
-elemental_ws = S{"Aeolian Edge", "Leaden Salute", "Wildfire", "Hot shot"}
+elemental_ws = S{"Aeolian Edge", "Leaden Salute", "Wildfire", "Hot Shot"}
 
 
 --------------------------------------------------------------------------------------------------------------
