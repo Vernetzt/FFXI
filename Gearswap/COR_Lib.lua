@@ -10,13 +10,13 @@ runspeedslot = 'legs'
 --------------------------------------------------------------------------------------------------------------
 -- HUD STUFF -- TO BE EXTERNALIZED
 --------------------------------------------------------------------------------------------------------------
-meleeing = M('AUTO', 'OFF', 'ON')
+meleeing = M('OFF', 'ON', 'AUTO')
 lock = M('OFF', 'ON')
 mBurst = M(false)
 runspeed = M('OFF', 'ON')
 oldElement = elements.current
 mBurstOldValue = mBurst.value
-matchsc = M('AUTO', 'OFF', 'ON')
+matchsc = M('OFF', 'ON', 'AUTO')
 MB_Window = 0
 dualwield = M('AUTO', '31', '11')
 bow = M('OFF', 'ON')
@@ -27,9 +27,10 @@ lastIdle = ""
 lastMelee = ""
 flipforce = true
 
--- Combine?
-ammoLock = M('OFF', 'ON')
-rangeLock = M('OFF', 'ON')
+ammo_warning_limit = 10
+warned = M(false)
+flurry = 0
+snapshot = M('AUTO','0','15','30')
 
 --------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------
@@ -38,31 +39,12 @@ setupTextWindow()
 
 Buff = 
     {
-        ['Composure'] = false, 
-        ['Stymie'] = false, 
-        ['Saboteur'] = false, 
-        ['En-Weather'] = false,
-        ['En-Day'] = false,
-		['En-BadDay'] = false,
-        ['Enspell'] = false,
+        ['Triple Shot'] = false
     }
     
 -- Reset the state vars tracking strategems.
 function update_active_ja(name, gain)
-    Buff['Composure'] = buffactive['Composure'] or false
-    Buff['Stymie'] = buffactive['Stymie'] or false
-    Buff['Saboteur'] = buffactive['Saboteur'] or false
-    Buff['En-Weather'] = buffactive[nukes.enspell[world.weather_element]] or false
-    Buff['En-Day'] = buffactive[nukes.enspell[world.day_element]] or false
-	Buff['En-BadDay'] = buffactive[nukes.enspell[element.strong_to[world.day_element]]] or false
-    Buff['Enspell'] =   buffactive[nukes.enspell['Earth']] or 
-                        buffactive[nukes.enspell['Water']] or 
-                        buffactive[nukes.enspell['Air']] or 
-                        buffactive[nukes.enspell['Fire']] or 
-                        buffactive[nukes.enspell['Ice']] or 
-                        buffactive[nukes.enspell['Lightning']] or 
-                        buffactive[nukes.enspell['Light']] or 
-                        buffactive[nukes.enspell['Dark']] or false
+    Buff['Triple Shot'] = buffactive['Triple Shot'] or false
 end
 
 function buff_refresh(name,buff_details)
@@ -77,40 +59,20 @@ function buff_change(name,gain,buff_details)
     update_active_ja()
     validateTextInformation()
     updateDualWield()
+    updateSnapshot()
+    get_flury_value(name,gain)
     autoDT(name,gain)
+
 end
 
-function RDM_lockMainHand( value )
+function COR_weaponLock( value )
     -- We want to force lock weapons
     if value == 'ON' then
-      -- We force lock only main and sub if in zeroTP mode (since we care abot lock, but not TP so Ullr and Ammo still swapping)
-        if meleeModes.current == 'zeroTP' then
-              disable('main','sub')
-              ammoLock:set('OFF')
-              rangeLock:set('OFF')
-              -- If not in zeroTP mode, lock everything
-        elseif bow.value == 'ON' then
-              disable('main','sub','ammo')
-              ammoLock:set('ON')
-              rangeLock:set('OFF')
-        elseif bow.value == 'OFF' then
-              disable('main','sub','ranged')
-              enable ('ammo')
-              ammoLock:set('OFF')
-              rangeLock:set('ON')
-        end
-    -- If we are in auto or off mode, but not in zeroTP, we unlock everything
+        disable('main','sub','ranged')
+
+    -- If we are in auto or off mode
     elseif value == 'OFF' or 'AUTO' then
-        if bow.value == 'ON' then
-            enable('main','sub')
-            disable('ammo')
-            ammoLock:set('ON')
-            rangeLock:set('OFF')
-        else
-            enable('main','sub','ranged','ammo')
-            ammoLock:set('OFF')
-            rangeLock:set('OFF')
-        end
+        enable('main','sub','ranged')
     end
     validateTextInformation()
 end
@@ -120,6 +82,9 @@ function precast(spell)
     local spellMap = get_spell_map(spell)
     local enfeebMap = get_enfeeb_map(spell)
 	local spell_recasts = windower.ffxi.get_spell_recasts()
+
+    -- Check that proper ammo is available if we're using ranged attacks or similar.
+    do_bullet_checks(spell, spellMap)
 
     -- Auto use Echo Drops if you are trying to cast while silenced --    
     if spell.action_type == 'Magic' and buffactive['Silence'] then 
@@ -139,7 +104,7 @@ function precast(spell)
         return
     end    
 	
-	-- Checks for the TP threshold to lock weapons if over TP treshold -or- if we are in zeroTP mode 
+	-- Checks for the TP threshold to lock weapons if over TP treshold
     if meleeing.value == "AUTO" then
         -- if player.tp >= lockWeaponTP or meleeModes.current == 'zeroTP' then
         if player.tp >= lockWeaponTP then
@@ -147,7 +112,7 @@ function precast(spell)
         else
             lock:set('OFF')
         end
-        RDM_lockMainHand(lock.value)
+        COR_weaponLock(lock.value)
     end
     
 
@@ -168,6 +133,25 @@ function precast(spell)
         end
 	end
 
+    
+
+
+    ----------------------------------------------------------------------------------------
+    -- PRESHOT RANGED LOGIC
+    ----------------------------------------------------------------------------------------
+    if spell.action_type == 'Ranged Attack' then
+
+        special_ammo_check()
+
+        if flurry == 2 then
+            equip(sets.precast.RA.Flurry2)
+        elseif flurry == 1 then
+            equip(sets.precast.RA.Flurry1)
+        else
+            equip(sets.precast.RA)
+        end
+    end
+
     -- Moving on to other types of magic
     if spell.type == 'WhiteMagic' or spell.type == 'BlackMagic' or spell.type == 'Ninjutsu' or spell.type == 'Trust' then
      
@@ -179,26 +163,43 @@ function precast(spell)
              
         -- Cure Precast
         elseif spell.name:match('Cure') or spell.name:match('Cura') then
-         
             equip(sets.precast.cure)         
+
         -- Enhancing Magic
         elseif spell.skill == 'Enhancing Magic' then
-         
             equip(sets.precast.enhancing)            
             if spell.target.type == 'SELF' and spell.name == 'Sneak' then
                 windower.ffxi.cancel_buff(71)--[[Cancels Sneak]]
             end
+
+        elseif spell.name:match('Utsusemi') then       
+            equip(sets.precast.utsu)
+
         else       
             -- For everything else we go with max fastcast
             equip(sets.precast.casting)                
         end
     end
+
+    if (spell.type == 'CorsairRoll' or spell.english == "Double-Up") then
+        equip(sets.precast.PhantomRoll[spell.name])
+        -- equip(sets.precast.PhantomRoll)
+        if luzafMode.value == 'ON' then
+            equip(sets.precast.LuzafRing)
+        end
+    end
+
+    if spell.english == 'Fold' and buffactive['Bust'] == 2 then
+        if sets.precast.FoldDoubleBust then
+            equip(sets.precast.FoldDoubleBust)
+        end
+    end
+
     -- Job Abilities
-    -- We use a cat
-    -- catch all here, if the set exists for an ability, use it
+    -- We use a catch all here, if the set exists for an ability, use it
     -- This way we don't need to write a load of different code for different abilities, just make a set
     if sets.precast[spell.name] then
-        equip(sets.precast[spell.name])        
+        equip(sets.precast[spell.name])
     end
 end
  
@@ -226,8 +227,37 @@ function midcast(spell)
     elseif spell.name:match('Utsusemi') then       
         equip(sets.midcast.utsu)
     
+    ----------------------------------------------------------------------------------------
+    -- MIDSHOT RANGED LOGIC
+    ----------------------------------------------------------------------------------------
+
+    elseif spell.type == 'CorsairShot' then
+        if (spell.english ~= 'Light Shot' and spell.english ~= 'Dark Shot') then
+           SashLogic(spell)
+            if quickdrawModes.value == 'Potency' then
+                equip(sets.midcast.Quickdraw.Potency)
+            elseif quickdrawModes.value == 'STP' then
+                equip(sets.midcast.Quickdraw.STP)
+            end
+        end
     elseif spell.action_type == 'Ranged Attack' then
-        equip(sets.midcast.RA)
+        if Buff['Triple Shot'] then
+            equip(sets.midcast.RA.triple[rangedModes.value])
+        else
+            equip(sets.midcast.RA[rangedModes.value])
+        end
+            -- if buffactive['Aftermath: Lv.3'] and player.equipment.ranged == "Armageddon" then
+            --     equip(sets.TripleShotCritical)
+            --     if (spell.target.distance < (7 + spell.target.model_size)) and (spell.target.distance > (5 + spell.target.model_size)) then
+            --         equip(sets.TrueShot)
+            --     end
+            -- end
+        -- elseif buffactive['Aftermath: Lv.3'] and player.equipment.ranged == "Armageddon" then
+        --     equip(sets.midcast.RA.Critical)
+        --     if (spell.target.distance < (7 + spell.target.model_size)) and (spell.target.distance > (5 + spell.target.model_size)) then
+        --         equip(sets.TrueShot)
+        --     end
+        -- end
 
     -- Enhancing
     elseif spell.skill == 'Enhancing Magic' then
@@ -244,68 +274,15 @@ function midcast(spell)
             equip(sets.midcast.phalanx)
         elseif spell.name:match('Stoneskin') then
             equip(sets.midcast.stoneskin)
-        elseif spell.name:match('Temper') or spellMap == "Enspell" or spellMap == "Gain" then
-            equip(sets.midcast.enhancing.potency)
-        else
-            equip(sets.midcast.enhancing.duration) -- fall back to duration if not specified above 
-        end
-
-        -- Casting on others, then we use composure bonus set
-        if Buff['Composure'] then 
-            -- if  spell.target.type ~= 'SELF' and spell.target.type == 'PLAYER' then
-            if  spell.target.type ~= 'SELF' then
-                equip(sets.midcast.enhancing.composure)
-            end
         end
 
     -- Enfeebling
     elseif spell.skill == 'Enfeebling Magic' then
-
-        if enfeebMap == 'macc' and rangeLock.value == 'OFF' then
-            equip(sets.midcast.Enfeebling[enfeebMap].bow)
-        elseif enfeebMap == 'intmacc' and rangeLock.value == 'OFF' then
-            equip(sets.midcast.Enfeebling[enfeebMap].bow)
-        else
-            equip(sets.midcast.Enfeebling[enfeebMap])
-        end
-
-        if Buff['Saboteur'] then
-            -- equip({hands=EMPY.Hands})
-            equip({hands="Regal Cuffs",})
-        end
-
-		-- If Stymie is up AND we're casting silence, we swap to 5/5 EMPY
-		if Buff['Stymie'] and spell.name =='Silence' then
-			equip(sets.midcast.Enfeebling.composure)
-		end
+        equip(sets.midcast.casting)
 
     -- Nuking
     elseif spell.type == 'BlackMagic' then
-    
-        if player.sub_job == ('NIN' or 'DNC') then
-            --   add_to_chat(322, 'RDM/NIN')
-            if mBurst.value == true then
-                equip(sets.midcast.MB[nukeModes.current].DW)
-            else
-                equip(sets.midcast.nuking[nukeModes.current].DW)
-            end
-        else
-            --   add_to_chat(322, 'NOT DW SJ')
-            if mBurst.value == true then
-                equip(sets.midcast.MB[nukeModes.current])
-            else
-                equip(sets.midcast.nuking[nukeModes.current])
-            end
-        end
-
-        -- Obi / Orph Logic
-        if spell.skill ~= 'Enhancing Magic' and spellMap ~= 'Helix' then
-            SashLogic(spell)
-        end
-
-        if enfeebMap then
-            equip(sets.midcast.Enfeebling[enfeebMap])
-        end
+        equip(sets.midcast.casting)
     
     elseif spell.type == 'Trust' then
         equip(sets.precast.casting)
@@ -324,31 +301,30 @@ function midcast(spell)
     elseif sets.midcast[spellMap] then
         equip(sets.midcast[spellMap])
     end
+
+    ----------------------------------------------------------------------------------------
     -- Weapon skills
     -- sets.me["Insert Weaponskill"] are basically how I define any non-magic spells sets, aka, WS, JA, Idles, etc.
+    ----------------------------------------------------------------------------------------
+
+    if spell.type == 'WeaponSkill' then
+        if spell.skill == 'Marksmanship' then
+            special_ammo_check()
+        end
+    end
+
+
     if sets.me[spell.name] then
+        -- if spell.type == 'WeaponSkill' then
+        --     if spell.skill == 'Marksmanship' then
+        --         special_ammo_check()
+        --     end
+        -- end
         equip(sets.me[spell.name])
 
-        -- Sanguine BBlade belt optim
-        if spell.name == 'Sanguine Blade' then
-            -- Obi / Orph Logic
+        if elemental_ws:contains(spell.name) then
             SashLogic(spell)
         end
-
-        if spell.name == 'Seraph Blade' then
-            -- Obi / Orph Logic
-            SashLogic(spell)
-        end
-
-    end
-    
-    -- Prevent Obi by swapping helix stuff last
-    -- Dark based Helix gets "pixie hairpin +1"
-    if spellMap == 'DarkHelix'then
-        equip(sets.midcast.DarkHelix)
-    end
-    if spellMap == 'Helix' then
-        equip(sets.midcast.Helix)
     end
 
     -- Th Mode: See Function
@@ -368,7 +344,7 @@ function aftercast(spell)
         else
             lock:set('OFF')
         end
-        RDM_lockMainHand(lock.value)
+        COR_weaponLock(lock.value)
     end
 
     update_active_ja()
@@ -401,28 +377,10 @@ function idle()
             end
           end
         end
-		-- Optimizes Belt for when we want enspell to matter
-        if mainWeapon.value == "Crocea Mors" then
-            EnspellCheck()
-        end
-
-        if meleeModes.current == 'zeroTP' then
-            EnspellCheck()
-        end
-        
     else
         equip(sets.me.idle[idleModes.value])
-        -- Checks MP for Fucho-no-Obi
-        if player.mpp < 51 then
-            equip(sets.me.latent_refresh)          
-        end       
     end
-    equip({main = mainWeapon.current, sub = subWeapon.current})
-
-    if bow.value == 'ON' then
-        equip({ranged = ambuBow,
-    ammo=rangedArrows,})
-    end
+    equip({main = mainWeapon.current, sub = subWeapon.current, ranged = rangedWeapon.current})
 end
  
 function status_change(new,old)
@@ -453,7 +411,7 @@ function self_command(command)
         if commandArgs[1] == 'toggle' then
             if commandArgs[2] == 'melee' then
                 meleeing:cycle()
-                RDM_lockMainHand(meleeing.value)
+                COR_weaponLock(meleeing.value)
                 if announceState then
                     add_to_chat(322, 'Lock: '..meleeing.value..'')
                 end
@@ -485,6 +443,27 @@ function self_command(command)
                     add_to_chat(322, 'DW: '..dualwield.value..'')
                 end
 
+            elseif commandArgs[2] == 'snapshot' then
+                snapshot:cycle()
+                idle()
+                if announceState then
+                    add_to_chat(322, 'SS: '..snapshot.value..'')
+                end
+
+            elseif commandArgs[2] == 'quickdraw' then
+                quickdrawModes:cycle()
+                idle()
+                if announceState then
+                    add_to_chat(322, 'Quickdraw: '..quickdrawModes.value..'')
+                end
+
+            elseif commandArgs[2] == 'luzaf' then
+                luzafMode:cycle()
+                idle()
+                if announceState then
+                    add_to_chat(322, 'Luzaf: '..luzafMode.value..'')
+                end
+
             elseif commandArgs[2] == 'forcedt' then
                 forceDT()
                 idle()
@@ -502,19 +481,6 @@ function self_command(command)
                 end
                 if announceState then
                     add_to_chat(322, 'TH: '..thMode.value..'')
-                end
-
-            elseif commandArgs[2] == 'bow' then
-                bow:cycle()
-                RDM_lockMainHand(meleeing.value)
-                idle()
-                if bow.value == 'ON' then
-                    enable('ranged','ammo')
-                    equip({ranged=ambuBow})
-                    disable('ranged','ammo')
-                end
-                if announceState then
-                    add_to_chat(322, 'Bow: '..bow.value..'')
                 end
 
             elseif commandArgs[2] == 'mainweapon' then
@@ -541,6 +507,18 @@ function self_command(command)
                     add_to_chat(322, 'Sub: '..subWeapon.value..'')
                 end
 
+            elseif commandArgs[2] == 'rangedweapon' then
+                if commandArgs[3] then
+                    rangedWeapon:set(commandArgs[3])
+                else
+                    rangedWeapon:cycle()
+                end
+
+                idle()
+                if announceState then
+                    add_to_chat(322, 'Ranged: '..rangedWeapon.value..'')
+                end
+
             elseif commandArgs[2] == 'weapons' then
                 if commandArgs[3] == 'NaeTP' then
                     mainWeapon:set('Naegling')
@@ -548,10 +526,6 @@ function self_command(command)
                 elseif commandArgs[3] == 'MaxTP' then
                     mainWeapon:set('Maxentius')
                     subWeapon:set(TpBonus)
-                elseif commandArgs[3] == 'ZeroTP' then
-                    mainWeapon:set('Aern Dagger')
-                    subWeapon:set('Qutrub Knife')
-                    -- meleeModes:set('zeroTP')
                 elseif commandArgs[3] == 'TauTP' then
                     mainWeapon:set('Tauret')
                     subWeapon:set(TpBonus)
@@ -567,12 +541,13 @@ function self_command(command)
                 if announceState then
                     add_to_chat(322, 'Main: '..mainWeapon.value..'')
                     add_to_chat(322, 'Sub: '..subWeapon.value..'')
+                    add_to_chat(322, 'Ranged: '..rangedWeapon.value..'')
                 end
 
-            elseif commandArgs[2] == 'nukemode' then
-                nukeModes:cycle()
+            elseif commandArgs[2] == 'rangedModes' then
+                rangedModes:cycle()
                 if announceState then
-                    add_to_chat(322, 'Nukes: '..nukeModes.value..'')
+                    add_to_chat(322, 'Ranged: '..rangedModes.value..'')
                 end
 
             elseif commandArgs[2] == 'matchsc' then
@@ -584,102 +559,53 @@ function self_command(command)
 
         if commandArgs[1] == 'ws' then
             if commandArgs[2] == 'auto' then
-                if S{'Crocea Mors','Naegling'}:contains(player.equipment.main) then
+                if S{'Naegling'}:contains(player.equipment.main) then
                     send_command('@input /ws "Savage Blade" <t>')
-                elseif S{'Maxentius'}:contains(player.equipment.main) then
-                    send_command('@input /ws "Black Halo" <t>')
                 elseif S{'Tauret'}:contains(player.equipment.main) then
                     send_command('@input /ws "Evisceration" <t>')
                 end
             end
         end
         
-        if commandArgs[1]:lower() == 'scholar' then
-            handle_strategems(commandArgs)
-
-        elseif commandArgs[1]:lower() == 'nuke' then
+        if commandArgs[1]:lower() == 'quickdraw' then
             if not commandArgs[2] then
                 windower.add_to_chat(123,'No element type given.')indower.add_to_chat(123,'No element type given.')
                 return
             end
             
-            local nuke = commandArgs[2]:lower()
+            local quickdraw = commandArgs[2]:lower()
             
-            if (nuke == 'cycle' or nuke == 'cycledown') then
-                if nuke == 'cycle' then
+            if (quickdraw == 'cycle' or quickdraw == 'cycledown') then
+                if quickdraw == 'cycle' then
                     elements:cycle()
                     oldElement = elements.current
-                elseif nuke == 'cycledown' then 
+                elseif quickdraw == 'cycledown' then 
                     elements:cycleback() 
                     oldElement = elements.current
                 end               
                 validateTextInformation()
                 if announceState then
-                    add_to_chat(322, 'Nuking: '..elements.current..'')
+                    add_to_chat(322, 'Quickdraw: '..elements.current..'')
                 end
 
-            elseif (nuke == 'enspellup' or nuke == 'enspelldown') then
-                if nuke == 'enspellup' then
-                    enspellElements:cycle()
-                elseif nuke == 'enspelldown' then 
-                    enspellElements:cycleback()
-                end     
-                validateTextInformation()
-                if announceState then
-                    add_to_chat(322, 'Enspell: '..enspellElements.value..'')
-                end
-
-            elseif (nuke == 'air' or nuke == 'ice' or nuke == 'fire' or nuke == 'water' or nuke == 'lightning' or nuke == 'earth' or nuke == 'light' or nuke == 'dark') then
+            elseif (quickdraw == 'air' or quickdraw == 'ice' or quickdraw == 'fire' or quickdraw == 'water' or quickdraw == 'lightning' or quickdraw == 'earth' or quickdraw == 'light' or quickdraw == 'dark') then
                 local newType = commandArgs[2]
                 elements:set(newType)                  
                 validateTextInformation()
+                send_command('@input /ja "'..nukes[quickdraw][elements.current]..'"')
 
-            elseif not nukes[nuke] then
+            elseif not nukes[quickdraw] then
                 windower.add_to_chat(123,'Unknown element type: '..tostring(commandArgs[2]))
                 return              
-            elseif nuke == 'enspell' then
-                send_command('@input /ma "'..nukes[nuke][enspellElements.current]..'"')     
             else        
                 -- Leave out target; let Shortcuts auto-determine it.
                 --recast = windower.ffxi.get_spell_recasts(nukes[nuke][elements.current])
                 --if recast > 0 
-                send_command('@input /ma "'..nukes[nuke][elements.current]..'"')     
+                send_command('@input /ja "'..nukes[quickdraw][elements.current]..'"')
             end
         end
     end
 end
-
-
--- Checks if auto and then sets var for engage logic.
--- Write better buff logic
--- function updateDualWield()
---     if dualwield.value == 'AUTO' then
---         if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
---             (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
---             (buffactive[565] and buffactive.march == 2 and buffactive[580] and (buffactive[604] or buffactive[228])) ) then
---             -- 30% haste
---             currentHaste = 30
---         elseif ( (buffactive[33] and (buffactive[580] or buffactive.march or buffactive[604] or buffactive[228])) or -- Flutter and Geo or march or MG or embrava
---                 (buffactive[580] and (buffactive.march or buffactive[604] or buffactive[228])) or -- Geo and march or MG or embrava
---                 (buffactive.march == 2 and (buffactive[604] or buffactive[228])) or -- March x2 and MG or Embrava
---                 (buffactive[13] and (buffactive.march == 2 or buffactive[580]) and (buffactive[604] or buffactive[228])) ) then -- Slow, but likez the mad buffs 'n shiz, yo.
---             -- Capped Haste?
---             currentHaste = 47
---         end
---     else
---         -- Defaulting for next use.
---         currentHaste = 30
---     end
--- end
-
--- function updateDualWield()
---     if dualwield.value == 'AUTO' then
---         currentHaste=get_haste_value()
---     else
---         -- Defaulting for next use.
---         currentHaste = 30
---     end
--- end
 
 function autoDT(name,gain)
     local name2
@@ -752,6 +678,117 @@ function updateTimers(spell)
         elseif spell.english == "Bind" then
         -- send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
           send_command('timers create "Bind" 60 down')
+        elseif spell.english =="Light Shot" then
+            send_command('timers create "Light Shot" 60 down')
         end
     end
 end
+
+-- Determine whether we have sufficient ammo for the action being attempted.
+function do_bullet_checks(spell, spellMap, eventArgs)
+    local bullet_name
+    local bullet_min_count = 1
+
+    if spell.type == 'WeaponSkill' then
+        if spell.skill == "Marksmanship" then
+            if spell.english == 'Wildfire' or spell.english == 'Leaden Salute' then
+                -- magical weaponskills
+                bullet_name = MAbullet
+            else
+                -- physical weaponskills
+                bullet_name = WSbullet
+            end
+        else
+            -- Ignore non-ranged weaponskills
+            return
+        end
+    elseif spell.type == 'CorsairShot' then
+        bullet_name = QDbullet
+    elseif spell.action_type == 'Ranged Attack' then
+        bullet_name = RAbullet
+        if buffactive['Triple Shot'] then
+            bullet_min_count = 3
+        end
+    end
+
+    local available_bullets = player.inventory[bullet_name] or player.wardrobe[bullet_name]
+
+    -- If no ammo is available, give appropriate warning and end.
+    if not available_bullets then
+        if spell.type == 'CorsairShot' and player.equipment.ammo ~= 'empty' then
+            add_to_chat(104, 'No Quick Draw ammo left.  Using what\'s currently equipped ('..player.equipment.ammo..').')
+            return
+        elseif spell.type == 'WeaponSkill' and player.equipment.ammo == RAbullet then
+            add_to_chat(104, 'No weaponskill ammo left.  Using what\'s currently equipped (standard ranged bullets: '..player.equipment.ammo..').')
+            return
+        else
+            -- add_to_chat(104, 'No ammo ('..bullet_name..') available for that action.')
+            -- add_to_chat(104, 'No ammo ('..tostring(bullet_name)..') available for that action.')
+            -- cancel_spell()
+            -- eventArgs.cancel = true
+            return
+        end
+    end
+
+    -- Don't allow shooting or weaponskilling with ammo reserved for quick draw.
+    if spell.type ~= 'CorsairShot' and bullet_name == QDbullet and available_bullets.count <= bullet_min_count then
+        add_to_chat(104, 'No ammo will be left for Quick Draw.  Cancelling.')
+        cancel_spell()
+        -- eventArgs.cancel = true
+        return
+    end
+
+    -- Low ammo warning.
+    if spell.type ~= 'CorsairShot' and warned.value == false
+        and available_bullets.count > 1 and available_bullets.count <= ammo_warning_limit then
+        local msg = '*****  LOW AMMO WARNING: '..bullet_name..' *****'
+        -- local border = ""
+        -- for i = 1, #msg do
+        --     border = border .. "*"
+        -- end
+
+        -- add_to_chat(104, border)
+        add_to_chat(104, msg)
+        -- add_to_chat(104, border)
+
+        warned:set()
+    elseif available_bullets.count > ammo_warning_limit and warned then
+        warned:reset()
+    end
+end
+
+function special_ammo_check()
+    -- Stop if Animikii/Hauksbok equipped
+    if no_shoot_ammo:contains(player.equipment.ammo) then
+        cancel_spell()
+        add_to_chat(123, '** Action Canceled: [ '.. player.equipment.ammo .. ' equipped!! ] **')
+        return
+    end
+end
+
+-- Hide this away somewhere better?
+windower.register_event('action',function(act)
+    --check if you are a target of spell
+    local actionTargets = act.targets
+    playerId = windower.ffxi.get_player().id
+    isTarget = false
+    for _, target in ipairs(actionTargets) do
+        if playerId == target.id then
+            isTarget = true
+        end
+    end
+    if isTarget == true then
+        if act.category == 4 then
+            local param = act.param
+            if snapshot.value == 'AUTO' then
+                if param == 845 and flurry ~= 2 then
+                    -- add_to_chat(122, 'Flurry Status: Flurry I')
+                    flurry = 1
+                elseif param == 846 then
+                    -- add_to_chat(122, 'Flurry Status: Flurry II')
+                    flurry = 2
+              end
+            end
+        end
+    end
+end)

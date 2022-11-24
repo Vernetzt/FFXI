@@ -20,6 +20,11 @@ keybinds_off['key_bind_geo_cycle'] = ''
 keybinds_off['key_bind_indi_cycle'] = ''
 keybinds_off['key_bind_entrust_cycle'] = ''
 
+keybinds_off['key_bind_ranged'] = ''
+keybinds_off['key_bind_rangedweapon'] = ''
+keybinds_off['key_bind_quickdraw'] = ''
+keybinds_off['key_bind_luzafMode'] = ''
+
 
 textHideMode = M(false)
 textHideOptions = M(false)
@@ -80,6 +85,13 @@ hud_regenMode = ''
 hud_dualwield = ''
 hud_bow = ''
 hud_thMode = ''
+
+hud_rangedMode = ''
+hud_rangedWeapon = ''
+hud_quickdrawElement = ''
+hud_snapshot = ''
+hud_quickdrawMode = ''
+hud_luzaf = ''
 
 hud_Enspell = ''
 hud_handleSkillchains = ''
@@ -173,6 +185,7 @@ function construct_HUD_Categories( useLightMode )
 			hud_cardinalChant = ''
 		end
 	else
+		-- NORMAL HUD MODE --------------------------------------------------------------------
 		hud_endofline = [[\cr
 		]]
 		hud_idleMode = [[\cr 
@@ -184,18 +197,49 @@ function construct_HUD_Categories( useLightMode )
 			hud_meleeMode = ''
 		end
 
-		if dualwield ~= nil then
+		if player.main_job == 'COR' then
+			hud_rangedMode = [[\cr 
+			${keybinds_color}${key_bind_ranged}${options_color}Ranged:\cr ${selection_color}${player_current_ranged|Unset}]]
+		else
+			hud_rangedMode = ''
+		end
+
+		if player.main_job == 'COR' then
+		-- if quickdrawMode ~= nil then
+			hud_quickdrawMode = [[\cr 
+			${keybinds_color}${key_bind_quickdraw}${options_color}Quickdraw:\cr ${selection_color}${player_current_quickdraw|Unset}]]
+		else
+			hud_quickdrawMode = ''
+		end
+
+		-- if dualwield ~= nil then
+		if player.main_job == 'RDM' or player.main_job == 'COR' or player.main_job == 'BLU' then
 			hud_dualwield = [[\cr 
 			${keybinds_color}${key_bind_dualwield}${options_color}DW:\cr ${selection_color}${player_current_dualwield|Unset}]]
 		else
 			hud_dualwield = ''
 		end
 
-		if bow ~= nil then
+		if player.main_job == 'COR' then
+			hud_snapshot = [[\cr 
+			${keybinds_color}${key_bind_snapshot}${options_color}SS:\cr ${selection_color}${player_current_snapshot|0}]]
+		else
+			hud_snapshot = ''
+		end
+
+		-- if bow ~= nil then
+		if player.main_job == 'RDM' then
 			hud_bow = [[\cr 
 			${keybinds_color}${key_bind_bow}${options_color}Bow:\cr ${selection_color}${player_current_bow|Unset}]]
 		else
 			hud_bow = ''
+		end
+
+		if player.main_job == 'COR' then
+			hud_luzafMode = [[\cr 
+			${keybinds_color}${key_bind_luzafMode}${options_color}Luzaf:\cr ${selection_color}${player_current_luzafMode|Unset}]]
+		else
+			hud_luzafMode = ''
 		end
 		
 		if thMode ~= nil then
@@ -204,9 +248,12 @@ function construct_HUD_Categories( useLightMode )
 		else
 			hud_thMode = ''
 		end
-
-		hud_nukingMode = [[\cr 
-		${keybinds_color}${key_bind_casting}${options_color}Nuking:\cr ${selection_color}${player_current_casting|Unset}]]
+		if player.main_job == "BLM" or player.main_job == "SCH" or player.main_job == "RDM" or player.main_job == "NIN" or player.main_job == "SMN" then
+			hud_nukingMode = [[\cr 
+			${keybinds_color}${key_bind_casting}${options_color}Nuking:\cr ${selection_color}${player_current_casting|Unset}]]
+		else
+			hud_nukingMode = ''
+		end
 		if mainWeapon ~= nil then
 			hud_mainWeapon = [[\cr 
 			${keybinds_color}${key_bind_mainweapon}${options_color}Main:\cr ${selection_color}${player_current_mainweapon|Unset}]]
@@ -217,13 +264,25 @@ function construct_HUD_Categories( useLightMode )
 			hud_subWeapon = [[\cr 
 			${keybinds_color}${key_bind_subweapon}${options_color}Sub:\cr ${selection_color}${player_current_subweapon|Unset}]]
 		else
-			hud_mainWeapon = ''
+			hud_subWeapon = ''
+		end
+		if player.main_job == 'COR' then
+			hud_rangedWeapon = [[\cr 
+			${keybinds_color}${key_bind_rangedweapon}${options_color}Gun:\cr ${selection_color}${player_current_rangedweapon|Unset}]]
+		else
+			hud_rangedWeapon = ''
 		end
 		if player.main_job == "BLM" or player.main_job == "SCH" or player.main_job == "RDM" or player.main_job == "NIN" or player.main_job == "WHM" or player.main_job == "SMN" or player.main_job == "GEO" then
 			hud_nukingElement = [[\cr 
 			${keybinds_color}${key_bind_element_cycle}${options_color}Nuking:\cr ${element_color}${toggle_element_cycle|Unset}]]
 		else
 			hud_nukingElement = ''
+		end
+		if player.main_job == "COR" then
+			hud_quickdrawElement = [[\cr 
+			${keybinds_color}${key_bind_element_cycle}${options_color}Quickdraw:\cr ${element_color}${toggle_element_cycle|Unset}]]
+		else
+			hud_quickdrawElement = ''
 		end
 		if player.main_job == 'SCH' then
 			hud_makingSC = [[\cr 
@@ -253,8 +312,10 @@ function construct_HUD_Categories( useLightMode )
 		${options_color}Last SC:${last_sc_element_color}${last_sc|No SC yet}]]
 		hud_burstWindow = [[\cr
 		${options_color}Burst Window:${last_sc_element_color}${burst_window|0}]]
-		hud_magicBurst = [[\cr
-		${options_color}MB:${player_current_mb}]]
+		if player.main_job == "BLM" or player.main_job == "SCH" or player.main_job == "BLU" or player.main_job == "RDM" or player.main_job == "NIN" or player.main_job == "SMN" then
+			hud_magicBurst = [[\cr
+			${options_color}MB:${player_current_mb}]]
+		end
 		if player.main_job == 'GEO' then
 			hud_geoCycle = [[\cr
 		  ${keybinds_color}${key_bind_geo_cycle}${options_color}Geo-Spell:\cr ${selection_color}${toggle_geo_cycle|Unset}]]
@@ -276,13 +337,13 @@ end
 function buildHUD( useLightMode )
 	if useLightMode then
 		hud_mode = hud_idleMode..hud_meleeMode..hud_dualwield..hud_nukingMode..hud_endofline
-		hud_options = hud_handleSkillchains..hud_lockWeapons..hud_dualwield..hud_thMode..hud_lockMovespeed..hud_endofline
+		hud_options = hud_handleSkillchains..hud_lockWeapons..hud_dualwield..hud_thMode..hud_luzaf..hud_lockMovespeed..hud_endofline
 		hud_job = hud_geoCycle..hud_indiCycle..hud_entrustCycle..hud_mainWeapon..hud_subWeapon..hud_bow..hud_regenMode..hud_nukingElement..hud_makingSC..hud_Enspell..hud_endofline        
 		hud_battle = hud_lastSC..hud_burstWindow..hud_magicBurst..hud_cardinalChant..hud_endofline
 	else
-		hud_mode = [[${sections_color}Modes:]]..hud_idleMode..hud_meleeMode..hud_nukingMode..hud_endofline
-		hud_options = [[${sections_color}Options:]]..hud_handleSkillchains..hud_lockWeapons..hud_dualwield..hud_thMode..hud_lockMovespeed..hud_endofline
-		hud_job = [[${sections_color}${player_job}:]]..hud_geoCycle..hud_indiCycle..hud_entrustCycle..hud_mainWeapon..hud_subWeapon..hud_bow..hud_regenMode..hud_nukingElement..hud_makingSC..hud_Enspell..hud_endofline        
+		hud_mode = [[${sections_color}Modes:]]..hud_idleMode..hud_meleeMode..hud_rangedMode..hud_quickdrawMode..hud_nukingMode..hud_endofline
+		hud_options = [[${sections_color}Options:]]..hud_handleSkillchains..hud_lockWeapons..hud_dualwield..hud_snapshot..hud_thMode..hud_luzafMode..hud_lockMovespeed..hud_endofline
+		hud_job = [[${sections_color}${player_job}:]]..hud_geoCycle..hud_indiCycle..hud_entrustCycle..hud_mainWeapon..hud_subWeapon..hud_rangedWeapon..hud_bow..hud_regenMode..hud_nukingElement..hud_quickdrawElement..hud_makingSC..hud_Enspell..hud_endofline        
 		hud_battle = [[${sections_color}Battle Info:]]..hud_lastSC..hud_burstWindow..hud_magicBurst..hud_cardinalChant..hud_endofline 
 	end
 
@@ -334,14 +395,46 @@ function validateTextInformation()
     	main_text_hud.player_current_melee = meleeModes.current
 		end
 
+		if rangedModes ~= nil then
+    	main_text_hud.player_current_ranged = rangedModes.current
+		end
+
+		if quickdrawModes ~= nil then
+			main_text_hud.player_current_quickdraw = quickdrawModes.current
+		end
+
 		if dualwield ~= nil then
     	main_text_hud.player_current_dualwield = dualwield.current
 		end
+
+		if snapshot ~= nil then
+    	main_text_hud.player_current_snapshot = snapshot.current
+		end
+
 		if bow ~= nil then
-			main_text_hud.player_current_bow = bow.current
+			if bow.value == "OFF" then
+				main_text_hud.player_current_bow = const_off
+			elseif bow.value == "ON" then
+				main_text_hud.player_current_bow = const_on
+			end
+			-- main_text_hud.player_current_bow = bow.current
+		end
+		if luzafMode ~= nil then
+			if luzafMode.value == "OFF" then
+				main_text_hud.player_current_luzafMode = const_off
+			elseif luzafMode.value == "ON" then
+				main_text_hud.player_current_luzafMode = const_on
+			end
+		-- else
+		-- 	main_text_hud.player_current_luzafMode = luzafMode.current
 		end
 		if thMode ~= nil then
-			main_text_hud.player_current_thMode = thMode.current
+			if thMode.value == "OFF" then
+				main_text_hud.player_current_thMode = const_off
+			elseif thMode.value == "ON" then
+				main_text_hud.player_current_thMode = const_on
+			end
+			-- main_text_hud.player_current_thMode = thMode.current
 		end
 
 
@@ -350,13 +443,19 @@ function validateTextInformation()
     end
     if subWeapon ~= nil then
     	main_text_hud.player_current_subweapon = subWeapon.current
-	end
+		end
+		if rangedWeapon ~= nil then
+    	main_text_hud.player_current_rangedweapon = rangedWeapon.current
+		end
     if nukeModes ~= nil then
     	main_text_hud.player_current_casting = nukeModes.current
   	end
   	if elements ~= nil then
     	main_text_hud.toggle_element_cycle = elements.current
-	end
+		end
+		if quickdrawElement ~= nil then
+    	main_text_hud.toggle_quickdraw_cycle = elements.current
+		end
     if enspellElements ~= nil then 
     	main_text_hud.toggle_enspell_cycle = enspellElements.current
     end

@@ -183,7 +183,6 @@ function handle_strategems(cmdParams)
 end
 
 if player and player.index and windower.ffxi.get_mob_by_index(player.index) then
-
     windower.raw_register_event('action', function(act)
         for _, target in pairs(act.targets) do
             local battle_target = windower.ffxi.get_mob_by_target("t")
@@ -240,30 +239,30 @@ if autorunspeed then
     end)
 end
 
-    windower.raw_register_event('prerender', function()
-        if not (os.clock() > tickdelay) then return end
+windower.raw_register_event('prerender', function()
+    if not (os.clock() > tickdelay) then return end
 
-        -- if auto_CP_Cape then
-        --     auto_cp()
-        -- end
+    -- if auto_CP_Cape then
+    --     auto_cp()
+    -- end
 
-        if MB_Window > 0 then
-            MB_Window = 14 - (os.time() - MB_Time)
-            if matchsc.value == 'ON' or matchsc.value == 'AUTO' then
-                selectSCElement()
-                mBurst:set(true)
-            end
-        else
-            elements:set(oldElement)
-            if matchsc.value == 'ON' then
-                mBurst:set(true)
-            else
-                mBurst:set(false)
-            end
+    if MB_Window > 0 then
+        MB_Window = 14 - (os.time() - MB_Time)
+        if matchsc.value == 'ON' or matchsc.value == 'AUTO' then
+            selectSCElement()
+            mBurst:set(true)
         end
-        validateTextInformation()
-        tickdelay = os.clock() + .5
-    end)
+    else
+        elements:set(oldElement)
+        if matchsc.value == 'ON' then
+            mBurst:set(true)
+        else
+            mBurst:set(false)
+        end
+    end
+    validateTextInformation()
+    tickdelay = os.clock() + .5
+end)
 
 function auto_cp()
     --Now we check if we need to lock our back for CP
@@ -392,7 +391,7 @@ function get_weather_intensity()
     return gearswap.res.weather[world.weather_id].intensity
 end
 
-function SashLogic( spell )
+function SashLogic(spell)
     -- Match double weather (non-bad day)
     if spell.element == world.weather_element and world.weather_intensity == 2 then
         -- If bad day but double weather check distance
@@ -546,6 +545,14 @@ function updateDualWield()
     end
 end
 
+function updateSnapshot()
+    if snapshot.value == 'AUTO' then
+    else
+        -- Defaulting for next use.
+        currentFlurry = 0
+    end
+end
+
 function get_haste_value()
     if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
         (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
@@ -563,5 +570,22 @@ function get_haste_value()
     else
         HasteValue = 30
         return HasteValue
+    end
+end
+
+function get_flury_value(name,gain)
+    local name2
+    name2 = string.lower(name)
+
+    if S{"flurry",}:contains(name2) then
+        if gain then
+            -- add_to_chat(122, "Flurry status gained.")
+        else
+            flurry = 0
+            -- add_to_chat(122, "Flurry status cleared.")
+        end
+        -- if not midaction() then
+        --     handle_equipping_gear(player.status)
+        -- end
     end
 end

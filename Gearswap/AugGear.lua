@@ -72,7 +72,7 @@ if  ( player.main_job == "RDM" or
   Amal.Body.A	=	{ name="Amalric Doublet +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}}
   Amal.Hands.D =	{ name="Amalric Gages +1", augments={'INT+12','Mag. Acc.+20','"Mag.Atk.Bns."+20',}}
   Amal.Legs.A	 =	{ name="Amalric Slops +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}}
-  -- Amal.Feet.A =	{ name="Amalric Nails +1", augments={'MP+80','Mag. Acc.+20','"Mag.Atk.Bns."+20',}}
+  Amal.Feet.D =	{ name="Amalric Nails +1", augments={'Mag. Acc.+20','"Mag.Atk.Bns."+20','"Conserve MP"+7',}}
 end
 
 if  ( player.main_job == "RDM" or 
@@ -91,6 +91,7 @@ if  ( player.main_job == "RDM" or
   Merl.Hands.Phalanx = { name="Merlinic Dastanas", augments={'Mag. Acc.+30','"Dual Wield"+2','Phalanx +3',}}
   Merl.Legs.Phalanx = { name="Merlinic Shalwar", augments={'Crit.hit rate+2','MND+5','Phalanx +3','Accuracy+12 Attack+12','Mag. Acc.+12 "Mag.Atk.Bns."+12',}}
   Merl.Legs.MATT = { name="Merlinic Shalwar", augments={'Mag. Acc.+23 "Mag.Atk.Bns."+23','"Fast Cast"+5','INT+8','Mag. Acc.+15','"Mag.Atk.Bns."+10',}}
+  Merl.Legs.MB = { name="Merlinic Shalwar", augments={'Mag. Acc.+23 "Mag.Atk.Bns."+23','Magic burst dmg.+4%','INT+10','Mag. Acc.+6','"Mag.Atk.Bns."+4',}}
   Merl.Feet.FC = { name="Merlinic Crackows", augments={'Mag. Acc.+9 "Mag.Atk.Bns."+9','"Fast Cast"+6','CHR+10','Mag. Acc.+2',}}
   Merl.Feet.Drain = { name="Merlinic Crackows", augments={'Mag. Acc.+23 "Mag.Atk.Bns."+23','"Drain" and "Aspir" potency +4','Mag. Acc.+12','"Mag.Atk.Bns."+12',}}
   Merl.Feet.MB = { name="Merlinic Crackows", augments={'Mag. Acc.+14 "Mag.Atk.Bns."+14','Magic burst dmg.+10%','MND+7','"Mag.Atk.Bns."+11',}}
@@ -115,21 +116,25 @@ if  ( player.main_job == "RDM" or
 
   Chiro.Hands.TH = { name="Chironic Gloves", augments={'AGI+9','Pet: "Dbl. Atk."+2','"Treasure Hunter"+2','Accuracy+16 Attack+16','Mag. Acc.+18 "Mag.Atk.Bns."+18',}}
   Chiro.Hands.Idle = { name="Chironic Gloves", augments={'Rng.Atk.+8','"Drain" and "Aspir" potency +2','"Refresh"+1','Accuracy+16 Attack+16','Mag. Acc.+9 "Mag.Atk.Bns."+9',}}
-  Chiro.Legs.MACC		=	{ name="Chironic Hose", augments={'Mag. Acc.+25 "Mag.Atk.Bns."+25','"Conserve MP"+3','VIT+7','Mag. Acc.+14','"Mag.Atk.Bns."+6',}}
+  Chiro.Legs.MACC = { name="Chironic Hose", augments={'Mag. Acc.+25 "Mag.Atk.Bns."+25','"Conserve MP"+3','VIT+7','Mag. Acc.+14','"Mag.Atk.Bns."+6',}}
+  Chiro.Legs.Idle = { name="Chironic Hose", augments={'Pet: "Mag.Atk.Bns."+17','Crit.hit rate+3','"Refresh"+2','Accuracy+15 Attack+15','Mag. Acc.+9 "Mag.Atk.Bns."+9',}}
 end
 
-if  ( player.main_job == "BLU" ) then 
+if  ( player.main_job == "BLU" or
+      player.main_job == "COR" ) then 
 
   Herc.Head.FC = { name="Herculean Helm", augments={'"Mag.Atk.Bns."+3','"Fast Cast"+5','STR+5',} }
   Herc.Hands.Idle = { name="Herculean Gloves", augments={'Pet: DEX+15','DEX+10','"Refresh"+2','Accuracy+1 Attack+1','Mag. Acc.+5 "Mag.Atk.Bns."+5',} }
   Herc.Hands.WSD = { name="Herculean Gloves", augments={'Mag. Acc.+1','Crit. hit damage +2%','Weapon skill damage +7%','Accuracy+6 Attack+6','Mag. Acc.+12 "Mag.Atk.Bns."+12',} }
   Herc.Legs.Idle = { name="Herculean Trousers", augments={'MND+13','Mag. Acc.+21','"Refresh"+1','Mag. Acc.+19 "Mag.Atk.Bns."+19',}}
+  Herc.Legs.Phalanx = { name="Herculean Trousers", augments={'Pet: "Dbl. Atk."+1','MND+8','Phalanx +3','Mag. Acc.+18 "Mag.Atk.Bns."+18',}}
   Herc.Feet.Idle = { name="Herculean Boots", augments={'MND+3','"Rapid Shot"+4','"Refresh"+2','Mag. Acc.+11 "Mag.Atk.Bns."+11',} }
   Herc.Feet.TP = { name="Herculean Boots", augments={'"Triple Atk."+3','Accuracy+11','Attack+14',} }
   Herc.Feet.TH = { name="Herculean Boots", augments={'STR+3','Mag. Acc.+24','"Treasure Hunter"+2','Accuracy+4 Attack+4',}}
 end
 
-if  ( player.main_job == "BLU" ) then 
+if  ( player.main_job == "BLU" or
+      player.main_job == "COR" ) then 
 
   Adhe.Head.B =	{ name="Adhemar Bonnet +1", augments={'STR+12','DEX+12','Attack+20',}}
   -- Adhe.Head.B = { name="Adhemar Bonnet +1", augments={'STR+12','DEX+12','Attack+20',}}
@@ -147,7 +152,8 @@ if  ( player.main_job == "RDM" or
 end
 
 if  ( player.main_job == "RDM" or
-      player.main_job == "BLU" ) then
+      player.main_job == "BLU" or
+      player.main_job == "COR" ) then
 
   Taeon.Head.Phalanx = { name="Taeon Chapeau", augments={'Phalanx +3',} }
   Taeon.Body.Phalanx = { name="Taeon Tabard", augments = {'"Fast Cast"+4',} }

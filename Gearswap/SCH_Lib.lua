@@ -185,9 +185,17 @@ function midcast(spell)
     -- No need to annotate all this, it's fairly logical. Just equips the relevant sets for the relevant magic
     if spell.name:match('Cure') or spell.name:match('Cura') then
         if spell.element == world.weather_element or spell.element == world.day_element then
-            equip(sets.midcast.cure.weather)
+            if spell.target.type == 'SELF' then
+                equip(sets.midcast.cure.weather.self)
+            else
+                equip(sets.midcast.cure.weather)
+            end
         else
-            equip(sets.midcast.cure.normal)
+            if spell.target.type == 'SELF' then
+                equip(sets.midcast.cure.self)
+            else
+                equip(sets.midcast.cure.normal)
+            end
         end
     elseif spell.skill == 'Enhancing Magic' then
         equip(sets.midcast.enhancing)
@@ -250,7 +258,7 @@ function midcast(spell)
     end
 
     -- Obi / Orph Logic
-    if spell.skill ~= 'Enhancing Magic' and spellMap ~= 'Helix' then
+    if spell.skill ~= 'Enhancing Magic' and spell.skill ~= 'Healing Magic' and spellMap ~= 'Helix' then
         spellname = string.lower(spell.name)
         if not S{"drain","aspir","aspir ii"}:contains(spellname) then
             SashLogic(spell)
@@ -295,7 +303,8 @@ function idle()
     -- We check if we're meleeing because we don't want to idle in melee gear when we're only engaged for trusts
     if (meleeing.value == 'ON' and player.status=='Engaged') then   
         -- We're engaged and meleeing
-        equip(sets.me.melee)               
+        -- equip(sets.me.melee)      
+        equip(sets.me.idle[idleModes.value].locked)         
     else
         -- If we are building sublimation, then we swap refresh to sublimation style idle.
         if buffactive['Sublimation: Activated'] then
@@ -400,6 +409,27 @@ function self_command(command)
                 
                 idle()
                 if announceState then
+                    add_to_chat(322, 'Sub: '..subWeapon.value..'')
+                end
+
+            elseif commandArgs[2] == 'weapons' then
+                if commandArgs[3] == 'AkaEnki' then
+                    mainWeapon:set('Akademos')
+                    subWeapon:set('Enki Strap')
+                elseif commandArgs[3] == 'AkaKhon' then
+                    mainWeapon:set('Akademos')
+                    subWeapon:set('Khonsu')
+                elseif commandArgs[3] == 'MaxKaja' then
+                    mainWeapon:set('Maxentius')
+                    subWeapon:set('Kaja Rod')
+                elseif commandArgs[3] == 'MalKhon' then
+                    mainWeapon:set('Malignance Pole')
+                    subWeapon:set('Khonsu')
+                end
+
+                idle()
+                if announceState then
+                    add_to_chat(322, 'Main: '..mainWeapon.value..'')
                     add_to_chat(322, 'Sub: '..subWeapon.value..'')
                 end
 
@@ -542,7 +572,7 @@ function autoDT(name,gain)
       else
         idle()
       end
-    elseif name2 == "charm" then
+    elseif name2 == "doom" then
         if gain then
             equip(sets.Utility.Doom)
             send_command('@input /p Doomed')
