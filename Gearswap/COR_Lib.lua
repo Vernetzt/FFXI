@@ -144,15 +144,18 @@ function precast(spell)
     -- PRESHOT RANGED LOGIC
     ----------------------------------------------------------------------------------------
     if spell.action_type == 'Ranged Attack' then
-
         special_ammo_check()
-
         if flurry == 2 then
             equip(sets.precast.RA.Flurry2)
         elseif flurry == 1 then
             equip(sets.precast.RA.Flurry1)
         else
             equip(sets.precast.RA) 
+        end
+        
+    elseif spell.type == 'WeaponSkill' then
+        if spell.skill == 'Marksmanship' then
+            special_ammo_check()
         end
     end
 
