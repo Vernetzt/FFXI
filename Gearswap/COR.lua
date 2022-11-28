@@ -215,29 +215,29 @@ function get_sets()
     JSE = {}
 
 	-- Fill this with your own JSE. 
-    --
+    -- Laksamana's
     AF.Head		    =	""
     AF.Body		    =	""
     AF.Hands	    =	""
     AF.Legs		    =	""
     AF.Feet		    =	""
 
-    --
+    -- Lanun
     RELIC.Head		=	""
     RELIC.Body		=	""
-    RELIC.Hands 	=	""
+    RELIC.Hands 	=	"Lanun Gants +3"
     RELIC.Legs		=	""
     RELIC.Feet		=	""
 
-    --
-    EMPY.Head		=	""
-    EMPY.Body		=	""
-    EMPY.Hands		=	""
-    EMPY.Legs		=	""
-    EMPY.Feet		=	""
+    -- Chasseur's
+    EMPY.Head		=	"Chass. Tricorne +1"
+    EMPY.Body		=	"Chasseur's Frac +1"
+    EMPY.Hands		=	"Chasseur's Gants +1"
+    EMPY.Legs		=	"Chas. Culottes +1"
+    EMPY.Feet		=	"Chass. Bottes +1"
 
     --Sortie
-    JSE.Ear         =   ""
+    JSE.Ear         =   "Chas. Earring +1"
 
     -- Capes:
     CORCape = {}
@@ -314,6 +314,18 @@ function get_sets()
 	------------------------------------------------------------------------------------------------------
 
     sets.me.melee.normaldw = set_combine(sets.me.idle.refresh,{   
+        head = "Dampening Tam",
+        neck = "Mirage Stole +1",
+        left_ear = "Suppanomimi",
+        right_ear = "Eabani Earring",
+        body = "Adhemar jacket +1",
+        hands = "Adhemar wristbands +1",
+        left_ring = "Epona's ring",
+        right_ring = "Ilabrat Ring",
+        -- back = Rosmerta.DA,
+        waist = "Reiki Yotai",
+        legs = "Samnuha Tights",
+        feet = Herc.Feet.TP,
 
     })
 
@@ -322,6 +334,18 @@ function get_sets()
     })
 
     sets.me.melee.dtdw = set_combine(sets.me.melee.normaldw,{
+        head="Malignance Chapeau",
+        body="Malignance Tabard",
+        hands="Malignance Gloves",
+        legs="Malignance Tights",
+        feet="Malignance Boots",
+        neck="Loricate Torque +1",
+        waist="Reiki Yotai",
+        right_ear="Eabani Earring",
+        left_ear="Suppanomimi",
+        right_ring="Defending Ring",
+        left_ring = "Epona's ring",
+        -- back = Rosmerta.DA,
 
     })
 
@@ -334,16 +358,30 @@ function get_sets()
     -- +31 and +11 Dual Wield sets for toggle
  	------------------------------------------------------------------------------------------------------ 
 
-    sets.me.melee.normaldw11 = set_combine(sets.me.melee.normaldw,{   
-
+    sets.me.melee.normaldw11 = set_combine(sets.me.melee.normaldw,{
+        left_ear="Suppanomimi",
+        right_ear="Cessance Earring",
+        -- waist="Windbuffet belt +1",
+        waist="Sailfi Belt +1",
     })
 
     sets.me.melee.accdw11 = set_combine(sets.me.melee.accdw,{  
 
     })
 
-    sets.me.melee.dtdw11 = set_combine(sets.me.melee.dtdw,{   
-         
+    sets.me.melee.dtdw11 = set_combine(sets.me.melee.dtdw,{
+        head="Malignance Chapeau",
+        body="Malignance Tabard",
+        hands="Malignance Gloves",
+        legs="Malignance Tights",
+        feet="Malignance Boots",
+        neck="Loricate Torque +1",
+        waist="Reiki Yotai",
+        right_ear="Eabani Earring",
+        left_ear="Suppanomimi",
+        right_ring="Defending Ring",
+        left_ring = "Epona's ring",
+        -- back = Rosmerta.DA,
     })
 
     sets.me.melee.mdtdw11 = set_combine(sets.me.melee.mdtdw,{   
@@ -397,7 +435,7 @@ function get_sets()
     sets.me["Last Stand"] = {
 
     }
-    sets.me["Hotshot"] = {
+    sets.me["Hot Shot"] = {
 
     }
 
@@ -460,13 +498,13 @@ function get_sets()
     sets.precast.PhantomRoll = {
     }
 
-    sets.precast.PhantomRoll["Caster's Roll"] = set_combine(sets.precast.PhantomRoll, {legs="Chas. Culottes +1"})
-    sets.precast.PhantomRoll["Courser's Roll"] = set_combine(sets.precast.PhantomRoll, {feet="Chass. Bottes +1"})
-    sets.precast.PhantomRoll["Blitzer's Roll"] = set_combine(sets.precast.PhantomRoll, {head="Chass. Tricorne +1"})
-    sets.precast.PhantomRoll["Tactician's Roll"] = set_combine(sets.precast.PhantomRoll, {body="Chasseur's Frac +1"})
-    sets.precast.PhantomRoll["Allies' Roll"] = set_combine(sets.precast.PhantomRoll, {hands="Chasseur's Gants +1"})
+    sets.precast.PhantomRoll["Caster's Roll"] = set_combine(sets.precast.PhantomRoll, {legs=EMPY.Legs})
+    sets.precast.PhantomRoll["Courser's Roll"] = set_combine(sets.precast.PhantomRoll, {feet=EMPY.Feet})
+    sets.precast.PhantomRoll["Blitzer's Roll"] = set_combine(sets.precast.PhantomRoll, {head=EMPY.Head})
+    sets.precast.PhantomRoll["Tactician's Roll"] = set_combine(sets.precast.PhantomRoll, {body=EMPY.Body})
+    sets.precast.PhantomRoll["Allies' Roll"] = set_combine(sets.precast.PhantomRoll, {hands=EMPY.Hands})
     sets.precast.LuzafRing = {ring1="Luzaf's Ring"}
-    sets.precast.FoldDoubleBust = {hands="Lanun Gants +3"}
+    sets.precast.FoldDoubleBust = {hands=RELIC.Hands}
     sets.precast.WildCard = {}
     sets.precast.SnakeEye = {}
     sets.precast.RandomDeal = {}
