@@ -186,8 +186,11 @@ function precast(spell)
     end
 
     if (spell.type == 'CorsairRoll' or spell.english == "Double-Up") then
-        equip(sets.precast.PhantomRoll[spell.name])
-        -- equip(sets.precast.PhantomRoll)
+        if sets.precast.PhantomRoll[spell.name] then
+            equip(sets.precast.PhantomRoll[spell.name])
+        else
+            equip(sets.precast.PhantomRoll)
+        end
         if luzafMode.value == 'ON' then
             equip(sets.precast.LuzafRing)
         end
@@ -263,13 +266,6 @@ function midcast(spell)
         --     end
         -- end
 
-    elseif (spell.type == 'CorsairRoll' or spell.english == "Double-Up") then
-            equip(sets.precast.PhantomRoll[spell.name])
-            -- equip(sets.precast.PhantomRoll)
-            if luzafMode.value == 'ON' then
-                equip(sets.precast.LuzafRing)
-            end
-
     -- Enhancing
     elseif spell.skill == 'Enhancing Magic' then
 
@@ -298,6 +294,17 @@ function midcast(spell)
     elseif spell.type == 'Trust' then
         equip(sets.precast.casting)
 
+
+    elseif (spell.type == 'CorsairRoll' or spell.english == "Double-Up") then
+        if sets.precast.PhantomRoll[spell.name] then
+            equip(sets.precast.PhantomRoll[spell.name])
+        else
+            equip(sets.precast.PhantomRoll)
+        end
+        if luzafMode.value == 'ON' then
+            equip(sets.precast.LuzafRing)
+        end
+
     elseif spell.type == 'JobAbility' then
         equip(sets.me.idle.dt)
 
@@ -318,19 +325,8 @@ function midcast(spell)
     -- sets.me["Insert Weaponskill"] are basically how I define any non-magic spells sets, aka, WS, JA, Idles, etc.
     ----------------------------------------------------------------------------------------
 
-    if spell.type == 'WeaponSkill' then
-        if spell.skill == 'Marksmanship' then
-            special_ammo_check()
-        end
-    end
-
 
     if sets.me[spell.name] then
-        -- if spell.type == 'WeaponSkill' then
-        --     if spell.skill == 'Marksmanship' then
-        --         special_ammo_check()
-        --     end
-        -- end
         equip(sets.me[spell.name])
 
         if elemental_ws:contains(spell.name) then
