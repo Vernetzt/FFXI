@@ -15,6 +15,7 @@ lock = M('OFF', 'ON')
 mBurst = M(false)
 runspeed = M('OFF', 'ON')
 oldElement = elements.current
+-- oldElementQD = quickdrawElements.current
 mBurstOldValue = mBurst.value
 matchsc = M('OFF', 'ON', 'AUTO')
 MB_Window = 0
@@ -98,11 +99,15 @@ function precast(spell)
 	-- It's a *bit* wonky when you spam the macro, so don't spam macros, or remove that part.
 	if spell.action_type  == 'Magic' and spell_recasts[spell.recast_id] > 0 then
         cancel_spell()
-        downgradenuke(spell)
-        add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        if spell.type == 'BlackMagic' then
+            downgradenuke(spell)
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        else
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown]')
+        end
         send_command('input /recast "'..spell.name..'"')
         return
-    end    
+    end     
 	
 	-- Checks for the TP threshold to lock weapons if over TP treshold
     if meleeing.value == "AUTO" then
@@ -148,7 +153,7 @@ function precast(spell)
         elseif flurry == 1 then
             equip(sets.precast.RA.Flurry1)
         else
-            equip(sets.precast.RA)
+            equip(sets.precast.RA) 
         end
     end
 
@@ -346,6 +351,10 @@ function aftercast(spell)
         end
         COR_weaponLock(lock.value)
     end
+    
+    if (spell.type == 'CorsairRoll' or spell.english == "Double-Up") and not spell.interrupted then
+        -- display_roll_info(spell)
+    end
 
     update_active_ja()
     updateDualWield()
@@ -354,8 +363,7 @@ function aftercast(spell)
 
 end
 
--- NEW
--- Remove chat confirms at a later date
+-- NEW-- Remove chat confirms at a later date
 function idle()
     -- This function is called after every action, and handles which set to equip depending on what we're doing
     -- We check if we're meleeing because we don't want to idle in melee gear when we're only engaged for trusts
@@ -569,7 +577,7 @@ function self_command(command)
         
         if commandArgs[1]:lower() == 'quickdraw' then
             if not commandArgs[2] then
-                windower.add_to_chat(123,'No element type given.')indower.add_to_chat(123,'No element type given.')
+                windower.add_to_chat(123,'No element type given.')windower.add_to_chat(123,'No element type given.')
                 return
             end
             
@@ -578,22 +586,31 @@ function self_command(command)
             if (quickdraw == 'cycle' or quickdraw == 'cycledown') then
                 if quickdraw == 'cycle' then
                     elements:cycle()
+                    nextElement:cycle()
                     oldElement = elements.current
                 elseif quickdraw == 'cycledown' then 
                     elements:cycleback() 
+                    nextElement:cycleback()
                     oldElement = elements.current
                 end               
                 validateTextInformation()
                 if announceState then
-                    add_to_chat(322, 'Quickdraw: '..elements.current..'')
+                    add_to_chat(322, 'Quickdraw: '..elements.current..' -> '..nextElement.current)
                 end
 
-            elseif (quickdraw == 'air' or quickdraw == 'ice' or quickdraw == 'fire' or quickdraw == 'water' or quickdraw == 'lightning' or quickdraw == 'earth' or quickdraw == 'light' or quickdraw == 'dark') then
+            elseif (quickdraw == 'air' or quickdraw == 'ice' or quickdraw == 'fire' or quickdraw == 'water' or quickdraw == 'lightning' or quickdraw == 'earth') then
                 local newType = commandArgs[2]
-                elements:set(newType)                  
+                elements:set(newType)
+                oldElement = elements.current
                 validateTextInformation()
-                send_command('@input /ja "'..nukes[quickdraw][elements.current]..'"')
+                send_command('@input /ja "'..nukes['quickdraw'][elements.current]..'"')
 
+            elseif (quickdraw == 'light' or quickdraw == 'dark') then
+                local newType = commandArgs[2]
+                elements:set(newType)
+                validateTextInformation()
+                send_command('@input /ja "'..nukes['quickdraw'][elements.current]..'"')
+                
             elseif not nukes[quickdraw] then
                 windower.add_to_chat(123,'Unknown element type: '..tostring(commandArgs[2]))
                 return              
@@ -767,6 +784,7 @@ function special_ammo_check()
 end
 
 -- Hide this away somewhere better?
+-- Flurry helper
 windower.register_event('action',function(act)
     --check if you are a target of spell
     local actionTargets = act.targets

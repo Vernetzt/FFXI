@@ -116,7 +116,10 @@ element.strong_to = {['Light']='Dark', ['Dark']='Light', ['Fire']='Water', ['Ice
 
 enspellElements =  M('Ice', 'Air', 'Earth', 'Lightning', 'Water', 'Fire')
 
--- quickdrawElements =  M('Ice', 'Air', 'Dark', 'Light', 'Earth', 'Lightning', 'Water', 'Fire')
+quickdrawElements =  M('Ice', 'Air', 'Dark', 'Light', 'Earth', 'Lightning', 'Water', 'Fire')
+
+nextElement =  M('Air', 'Dark', 'Light', 'Earth', 'Lightning', 'Water', 'Fire','Ice')
+-- nextElement =  M('Ice', 'Air', 'Earth', 'Lightning', 'Water', 'Fire', 'Dark', 'Light')
 
 nukes = {}
 nukes.t1 = {['Earth']="Stone",      ['Water']="Water",      ['Air']="Aero",     ['Fire']="Fire",    ['Ice']="Blizzard",     ['Lightning']="Thunder", ['Light']="Thunder", ['Dark']="Blizzard"}
@@ -170,7 +173,9 @@ skillchains = {
     [298] = {id=298,english='Transfixion', elements={'Light'}, color=Colors[4]},
     [299] = {id=299,english='Scission',elements={'Earth'}, color=Colors[5]},
     [300] = {id=300,english='Detonation',elements={'Wind'}, color=Colors[3]},
-    [301] = {id=301,english='Impaction',elements={'Lightning'}, color=Colors[7]}
+    [301] = {id=301,english='Impaction',elements={'Lightning'}, color=Colors[7]},
+    [767] = {id=767,english='Radiance',elements={'Light','Fire','Lightning','Wind'}, color=Colors[4]},
+    [768] = {id=768,english='Umbra',elements={'Dark','Earth','Water','Ice'}, color=Colors[8]},
 }
 
 tier1sc =   {}
@@ -193,3 +198,70 @@ tier2sc['Lightning'] = 'Fragmentation'
 tier2sc['Water'] = 'Distortion'
 tier2sc['Fire'] = 'Fusion'
 
+rolls = {
+    [97]  = {id=97,en="Phantom Roll"},
+    [98]  = {id=98,en="Fighter's Roll",     lucky=5, unlucky=9, bonus="DA"},
+    [99]  = {id=99,en="Monk's Roll",        lucky=3, unlucky=7, bonus="SB"},
+    [100] = {id=100,en="Healer's Roll",     lucky=3, unlucky=7, bonus="CPR"},
+    [101] = {id=101,en="Wizard's Roll",     lucky=5, unlucky=9, bonus="MATT"},
+    [102] = {id=102,en="Warlock's Roll",    lucky=4, unlucky=8, bonus="MACC"},
+    [103] = {id=103,en="Rogue's Roll",      lucky=5, unlucky=9, bonus="CRIT"},
+    [104] = {id=104,en="Gallant's Roll",    lucky=3, unlucky=7, bonus="DEF"},
+    [105] = {id=105,en="Chaos Roll",        lucky=4, unlucky=8, bonus="ATT/RATT"},
+    [106] = {id=106,en="Beast Roll",        lucky=4, unlucky=8, bonus="P.ATT/RATT"},
+    [107] = {id=107,en="Choral Roll",       lucky=2, unlucky=6, bonus="SIRD"},
+    [108] = {id=108,en="Hunter's Roll",     lucky=4, unlucky=8, bonus="ACC/RACC"},
+    [109] = {id=109,en="Samurai Roll",      lucky=2, unlucky=6, bonus="STP"},
+    [110] = {id=110,en="Ninja Roll",        lucky=4, unlucky=8, bonus="EVA"},
+    [111] = {id=111,en="Drachen Roll",      lucky=4, unlucky=8, bonus="P.ACC/RACC"},
+    [112] = {id=112,en="Evoker's Roll",     lucky=5, unlucky=9, bonus="Refresh"},
+    [113] = {id=113,en="Magus's Roll",      lucky=2, unlucky=6, bonus="MDEF"},
+    [114] = {id=114,en="Corsair's Roll",    lucky=5, unlucky=9, bonus="XP"},
+    [115] = {id=115,en="Puppet Roll",       lucky=3, unlucky=7, bonus="P.MATT/MACC"},
+    [116] = {id=116,en="Dancer's Roll",     lucky=3, unlucky=7, bonus="Regen"},
+    [117] = {id=117,en="Scholar's Roll",    lucky=2, unlucky=6, bonus="Conserve MP"},
+    [118] = {id=118,en="Bolter's Roll",     lucky=3, unlucky=9, bonus="Movement+"},
+    [119] = {id=119,en="Caster's Roll",     lucky=2, unlucky=7, bonus="FC"},
+    [120] = {id=120,en="Courser's Roll",    lucky=3, unlucky=9, bonus="SS"},
+    [121] = {id=121,en="Blitzer's Roll",    lucky=4, unlucky=9, bonus="-Delay"},
+    [122] = {id=122,en="Tactician's Roll",  lucky=5, unlucky=8, bonus="Regain"},
+    [302] = {id=302,en="Allies' Roll",      lucky=3, unlucky=10, bonus="Skillchain+"},
+    [303] = {id=303,en="Miser's Roll",      lucky=5, unlucky=7, bonus="Save TP"},
+    [390] = {id=390,en="Naturalist's Roll", lucky=3, unlucky=7, bonus="Enh. Duration"},
+    [391] = {id=391,en="Runeist's Roll",    lucky=4, unlucky=8, bonus="MEVA"},
+  }
+
+
+--   before edits
+--   rolls = {
+--     [97]  = {id=97,en="Phantom Roll"},
+--     [98]  = {id=98,en="Fighter's Roll",     lucky=5, unlucky=9, bonus="Double Attack Rate"},
+--     [99]  = {id=99,en="Monk's Roll",        lucky=3, unlucky=7, bonus="Subtle Blow"},
+--     [100] = {id=100,en="Healer's Roll",     lucky=3, unlucky=7, bonus="Cure Potency Received"},
+--     [101] = {id=101,en="Wizard's Roll",     lucky=5, unlucky=9, bonus="Magic Attack"},
+--     [102] = {id=102,en="Warlock's Roll",    lucky=4, unlucky=8, bonus="Magic Accuracy"},
+--     [103] = {id=103,en="Rogue's Roll",      lucky=5, unlucky=9, bonus="Critical Hit Rate"},
+--     [104] = {id=104,en="Gallant's Roll",    lucky=3, unlucky=7, bonus="Defense"},
+--     [105] = {id=105,en="Chaos Roll",        lucky=4, unlucky=8, bonus="Attack"},
+--     [106] = {id=106,en="Beast Roll",        lucky=4, unlucky=8, bonus="Pet Attack"},
+--     [107] = {id=107,en="Choral Roll",       lucky=2, unlucky=6, bonus="Spell Interruption Rate"},
+--     [108] = {id=108,en="Hunter's Roll",     lucky=4, unlucky=8, bonus="Accuracy"},
+--     [109] = {id=109,en="Samurai Roll",      lucky=2, unlucky=6, bonus="Store TP"},
+--     [110] = {id=110,en="Ninja Roll",        lucky=4, unlucky=8, bonus="Evasion"},
+--     [111] = {id=111,en="Drachen Roll",      lucky=4, unlucky=8, bonus="Pet Magic Accuracy/Attack"},
+--     [112] = {id=112,en="Evoker's Roll",     lucky=5, unlucky=9, bonus="Refresh"},
+--     [113] = {id=113,en="Magus's Roll",      lucky=2, unlucky=6, bonus="Magic Defense"},
+--     [114] = {id=114,en="Corsair's Roll",    lucky=5, unlucky=9, bonus="Experience Points"},
+--     [115] = {id=115,en="Puppet Roll",       lucky=3, unlucky=7, bonus="Pet Magic Attack/Accuracy"},
+--     [116] = {id=116,en="Dancer's Roll",     lucky=3, unlucky=7, bonus="Regen"},
+--     [117] = {id=117,en="Scholar's Roll",    lucky=2, unlucky=6, bonus="Conserve MP"},
+--     [118] = {id=118,en="Bolter's Roll",     lucky=3, unlucky=9, bonus="Movement Speed"},
+--     [119] = {id=119,en="Caster's Roll",     lucky=2, unlucky=7, bonus="Fast Cast"},
+--     [120] = {id=120,en="Courser's Roll",    lucky=3, unlucky=9, bonus="Snapshot"},
+--     [121] = {id=121,en="Blitzer's Roll",    lucky=4, unlucky=9, bonus="Attack Delay"},
+--     [122] = {id=122,en="Tactician's Roll",  lucky=5, unlucky=8, bonus="Regain"},
+--     [302] = {id=302,en="Allies' Roll",      lucky=3, unlucky=10, bonus="Skillchain Damage"},
+--     [303] = {id=303,en="Miser's Roll",      lucky=5, unlucky=7, bonus="Save TP"},
+--     [390] = {id=390,en="Naturalist's Roll", lucky=3, unlucky=7, bonus="Enh. Magic Duration"},
+--     [391] = {id=391,en="Runeist's Roll",    lucky=4, unlucky=8, bonus="Magic Evasion"},
+--   }

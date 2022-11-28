@@ -10,7 +10,7 @@ runspeedslot = 'legs'
 --------------------------------------------------------------------------------------------------------------
 -- HUD STUFF -- TO BE EXTERNALIZED
 --------------------------------------------------------------------------------------------------------------
-meleeing = M('OFF', 'AUTO', 'ON')
+meleeing = M('OFF', 'ON')
 lock = M('OFF', 'ON')
 mBurst = M(false)
 runspeed = M('OFF', 'ON')
@@ -122,11 +122,15 @@ function precast(spell)
 	-- It's a *bit* wonky when you spam the macro, so don't spam macros, or remove that part.
 	if spell.action_type  == 'Magic' and spell_recasts[spell.recast_id] > 0 then
         cancel_spell()
-        downgradenuke(spell)
-        add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        if spell.type == 'BlackMagic' then
+            downgradenuke(spell)
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        else
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown]')
+        end
         send_command('input /recast "'..spell.name..'"')
         return
-    end
+    end   
 
     -- Checks for the TP threshold to lock weapons if over TP treshold -or- if we are in zeroTP mode 
     if meleeing.value == "AUTO" then
@@ -728,6 +732,8 @@ function updateTimers(spell)
             send_command('timers create "Dream Flower" 90 down')
        elseif spell.english == "Entomb" then
             send_command('timers create "Entomb Petrification" 60 down')
+        elseif spell.english == "Cruel Joke" then
+            send_command('timers create "Cruel Joke Doom" 60 down')
         end 
     end
 end
@@ -750,7 +756,7 @@ function autoTH(spell)
     if thMode.value == 'ON' then
         spellname = string.lower(spell.name)
         -- Add "spells" you wish TH gear to equip on
-        if S{"entomb"}:contains(spellname) then
+        if S{"entomb","diaga"}:contains(spellname) then
             equip(sets.Utility.TH)
         end
     end

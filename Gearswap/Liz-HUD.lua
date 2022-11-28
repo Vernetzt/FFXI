@@ -23,6 +23,7 @@ keybinds_off['key_bind_entrust_cycle'] = ''
 keybinds_off['key_bind_ranged'] = ''
 keybinds_off['key_bind_rangedweapon'] = ''
 keybinds_off['key_bind_quickdraw'] = ''
+keybinds_off['key_bind_quickdraw_cycle'] = ''
 keybinds_off['key_bind_luzafMode'] = ''
 
 
@@ -272,17 +273,16 @@ function construct_HUD_Categories( useLightMode )
 		else
 			hud_rangedWeapon = ''
 		end
-		if player.main_job == "BLM" or player.main_job == "SCH" or player.main_job == "RDM" or player.main_job == "NIN" or player.main_job == "WHM" or player.main_job == "SMN" or player.main_job == "GEO" then
-			hud_nukingElement = [[\cr 
-			${keybinds_color}${key_bind_element_cycle}${options_color}Nuking:\cr ${element_color}${toggle_element_cycle|Unset}]]
+		if player.main_job == "BLM" or player.main_job == "SCH" or player.main_job == "RDM" or player.main_job == "NIN" or player.main_job == "WHM" or player.main_job == "SMN" or player.main_job == "GEO" or player.main_job == "COR" then
+			if player.main_job == "COR" then
+				hud_nukingElement = [[\cr 
+				${keybinds_color}${key_bind_element_cycle}${options_color}Quickdraw:\cr ${element_color}${toggle_element_cycle|Unset}]]
+			else
+				hud_nukingElement = [[\cr 
+				${keybinds_color}${key_bind_element_cycle}${options_color}Nuking:\cr ${element_color}${toggle_element_cycle|Unset}]]
+			end
 		else
 			hud_nukingElement = ''
-		end
-		if player.main_job == "COR" then
-			hud_quickdrawElement = [[\cr 
-			${keybinds_color}${key_bind_element_cycle}${options_color}Quickdraw:\cr ${element_color}${toggle_element_cycle|Unset}]]
-		else
-			hud_quickdrawElement = ''
 		end
 		if player.main_job == 'SCH' then
 			hud_makingSC = [[\cr 
@@ -541,6 +541,7 @@ function validateTextInformation()
     end
     main_text_hud.element_color = Colors[elements.current]
     main_text_hud.enspell_color = Colors[enspellElements.current]
+		main_text_hud.enspell_color = Colors[quickdrawElements.current]
     main_text_hud.sc_element_color = scColor
 end
 

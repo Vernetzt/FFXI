@@ -133,8 +133,12 @@ function precast(spell)
 	-- It's a *bit* wonky when you spam the macro, so don't spam macros, or remove that part.
 	if spell.action_type  == 'Magic' and spell_recasts[spell.recast_id] > 0 then
         cancel_spell()
-        downgradenuke(spell)
-        add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        if spell.type == 'BlackMagic' then
+            downgradenuke(spell)
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        else
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown]')
+        end
         send_command('input /recast "'..spell.name..'"')
         return
     end    
@@ -631,7 +635,8 @@ function self_command(command)
 
             elseif (nuke == 'air' or nuke == 'ice' or nuke == 'fire' or nuke == 'water' or nuke == 'lightning' or nuke == 'earth' or nuke == 'light' or nuke == 'dark') then
                 local newType = commandArgs[2]
-                elements:set(newType)                  
+                elements:set(newType)              
+                oldElement = elements.current    
                 validateTextInformation()
 
             elseif not nukes[nuke] then
@@ -649,37 +654,6 @@ function self_command(command)
     end
 end
 
-
--- Checks if auto and then sets var for engage logic.
--- Write better buff logic
--- function updateDualWield()
---     if dualwield.value == 'AUTO' then
---         if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
---             (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
---             (buffactive[565] and buffactive.march == 2 and buffactive[580] and (buffactive[604] or buffactive[228])) ) then
---             -- 30% haste
---             currentHaste = 30
---         elseif ( (buffactive[33] and (buffactive[580] or buffactive.march or buffactive[604] or buffactive[228])) or -- Flutter and Geo or march or MG or embrava
---                 (buffactive[580] and (buffactive.march or buffactive[604] or buffactive[228])) or -- Geo and march or MG or embrava
---                 (buffactive.march == 2 and (buffactive[604] or buffactive[228])) or -- March x2 and MG or Embrava
---                 (buffactive[13] and (buffactive.march == 2 or buffactive[580]) and (buffactive[604] or buffactive[228])) ) then -- Slow, but likez the mad buffs 'n shiz, yo.
---             -- Capped Haste?
---             currentHaste = 47
---         end
---     else
---         -- Defaulting for next use.
---         currentHaste = 30
---     end
--- end
-
--- function updateDualWield()
---     if dualwield.value == 'AUTO' then
---         currentHaste=get_haste_value()
---     else
---         -- Defaulting for next use.
---         currentHaste = 30
---     end
--- end
 
 function autoDT(name,gain)
     local name2

@@ -116,12 +116,17 @@ function precast(spell)
         return        
     end       
 
-    if spell.action_type  == 'Magic' and spell_recasts[spell.recast_id] > 0 then
+	if spell.action_type  == 'Magic' and spell_recasts[spell.recast_id] > 0 then
         cancel_spell()
-        downgradenuke(spell)
-        add_to_chat(8, '****** ['..spell.name..' CANCELED - Spell on Cooldown, Downgrading spell] ******')
+        if spell.type == 'BlackMagic' then
+            downgradenuke(spell)
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown, Downgrading]')
+        else
+            add_to_chat(322, '['..spell.name..' CANCELED - Spell on Cooldown]')
+        end
+        send_command('input /recast "'..spell.name..'"')
         return
-    end
+    end   
 
     if meleeing.value == "AUTO" then
         -- if player.tp >= lockWeaponTP or meleeModes.current == 'zeroTP' then
@@ -479,6 +484,7 @@ function self_command(command)
             elseif (nuke == 'air' or nuke == 'ice' or nuke == 'fire' or nuke == 'water' or nuke == 'lightning' or nuke == 'earth' or nuke == 'light' or nuke == 'dark') then
                 local newType = commandArgs[2]
                 elements:set(newType)
+                oldElement = elements.current
                 updateSC(elements.current, scTier2.value)                
                 validateTextInformation()
             elseif not nukes[nuke] then

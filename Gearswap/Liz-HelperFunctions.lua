@@ -194,6 +194,12 @@ if player and player.index and windower.ffxi.get_mob_by_index(player.index) then
                         MB_Window = 11
                         MB_Time = os.time()
                         validateTextInformation()
+                    elseif action.add_effect_message > 766 and action.add_effect_message < 769 then
+                        last_skillchain = skillchains[action.add_effect_message]
+                        mBurstOldValue = mBurst.value
+                        MB_Window = 11
+                        MB_Time = os.time()
+                        validateTextInformation()
                     end
                 end
             end
@@ -589,3 +595,69 @@ function get_flury_value(name,gain)
         -- end
     end
 end
+
+-- Hides Default/Battlemod Roll Messages
+windower.register_event('incoming text', function(old, new, color)
+    --Hides Battlemod
+    if old:match("Roll.* The total.*") or old:match('.*Roll.*' .. string.char(0x81, 0xA8)) or old:match('.*uses Double.*The total') and color ~= 123 then
+        return true
+    end
+  
+    --Hides Vanilla
+    if old:match('.* receives the effect of .* Roll.') ~= nil then
+        return true
+    end
+  
+    return new, color
+  end)
+  
+  -- COR Roll Info
+  windower.register_event('action', function(act)
+    if act.category == 6 and table.containskey(rolls, act.param) then
+        local playerID = windower.ffxi.get_player().id
+        local rollActor = act.actor_id
+        local rollerName = windower.ffxi.get_mob_by_id(rollActor).name
+        local rollerInParty = windower.ffxi.get_mob_by_id(rollActor).in_party
+        local rollID = act.param
+        local rollNum = act.targets[1].actions[1].param
+        local rollName = rolls[rollID].en
+        -- local rollsize = (luzafMode.value and string.char(129,157)) or ''
+        local rollInfo = rolls[rollID]
+        local party = windower.ffxi.get_party()
+  
+        rollMembers = {}
+        for partyMem in pairs(party) do
+            for effectedTarget = 1, #act.targets do
+                --if mob is nil then the party member is not in zone, will fire an error.
+                if type(party[partyMem]) == 'table' and party[partyMem].mob and act.targets[effectedTarget].id == party[partyMem].mob.id then
+                    rollMembers[effectedTarget] = party[partyMem].name
+                end
+            end
+        end
+        local membersHit = table.concat(rollMembers, ', ')
+        
+        -- I rolled -> someone else
+        if rollActor == playerID then
+            if rollNum == 12 then
+                add_to_chat(167,  'Bust! '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..']')
+            elseif rollNum == rollInfo.lucky or rollNum == 11 then
+                add_to_chat(001,  ''..string.char(31,204).. tostring(rollNum)..string.char(31,001)..' '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..'] '..string.char(31,204).. tostring(rollInfo.lucky)..string.char(31,001)..':'..string.char(31,167).. tostring(rollInfo.unlucky)..string.char(31,001)..'')
+            elseif rollNum == rollInfo.unlucky then
+                add_to_chat(001,  ''..string.char(31,167).. tostring(rollNum)..string.char(31,001)..' '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..'] '..string.char(31,204).. tostring(rollInfo.lucky)..string.char(31,001)..':'..string.char(31,167).. tostring(rollInfo.unlucky)..string.char(31,001)..'')
+            else
+                add_to_chat(001,  ''..rollNum..' '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..'] '..string.char(31,204).. tostring(rollInfo.lucky)..string.char(31,001)..':'..string.char(31,167).. tostring(rollInfo.unlucky)..string.char(31,001)..'')
+            end
+        elseif rollerInParty then
+            if rollNum == 12 then
+                add_to_chat(167,  '['..rollerName..'] Bust! '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..']')
+            elseif rollNum == rollInfo.lucky or rollNum == 11 then
+                add_to_chat(001,  '['..rollerName..'] '..string.char(31,204).. tostring(rollNum)..string.char(31,001)..' '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..'] '..string.char(31,204).. tostring(rollInfo.lucky)..string.char(31,001)..':'..string.char(31,167).. tostring(rollInfo.unlucky)..string.char(31,001)..'')
+            elseif rollNum == rollInfo.unlucky then
+                add_to_chat(001,  '['..rollerName..'] '..string.char(31,167).. tostring(rollNum)..string.char(31,001)..' '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..'] '..string.char(31,204).. tostring(rollInfo.lucky)..string.char(31,001)..':'..string.char(31,167).. tostring(rollInfo.unlucky)..string.char(31,001)..'')
+            else
+                add_to_chat(001,  '['..rollerName..'] '..rollNum..' '..string.char(31,210)..rollName..string.char(31,001)..' ['..membersHit..'] '..string.char(31,204).. tostring(rollInfo.lucky)..string.char(31,001)..':'..string.char(31,167).. tostring(rollInfo.unlucky)..string.char(31,001)..'')
+            end
+        end
+  
+    end
+  end)
