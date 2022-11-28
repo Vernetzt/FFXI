@@ -10,12 +10,11 @@ runspeedslot = 'legs'
 --------------------------------------------------------------------------------------------------------------
 -- HUD STUFF -- TO BE EXTERNALIZED
 --------------------------------------------------------------------------------------------------------------
-meleeing = M('OFF', 'ON', 'AUTO')
+meleeing = M('OFF', 'ON')
 lock = M('OFF', 'ON')
 mBurst = M(false)
 runspeed = M('OFF', 'ON')
 oldElement = elements.current
--- oldElementQD = quickdrawElements.current
 mBurstOldValue = mBurst.value
 matchsc = M('OFF', 'ON', 'AUTO')
 MB_Window = 0
@@ -264,6 +263,13 @@ function midcast(spell)
         --     end
         -- end
 
+    elseif (spell.type == 'CorsairRoll' or spell.english == "Double-Up") then
+            equip(sets.precast.PhantomRoll[spell.name])
+            -- equip(sets.precast.PhantomRoll)
+            if luzafMode.value == 'ON' then
+                equip(sets.precast.LuzafRing)
+            end
+
     -- Enhancing
     elseif spell.skill == 'Enhancing Magic' then
 
@@ -350,10 +356,6 @@ function aftercast(spell)
             lock:set('OFF')
         end
         COR_weaponLock(lock.value)
-    end
-    
-    if (spell.type == 'CorsairRoll' or spell.english == "Double-Up") and not spell.interrupted then
-        -- display_roll_info(spell)
     end
 
     update_active_ja()
@@ -684,23 +686,20 @@ end
 function updateTimers(spell)
     if not spell.interrupted then
         if spell.english == "Sleep II" then
-        --   send_command('wait 35;gs c -cd '..spell.name..': [Off In 10~55 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~45 Seconds!]')
-          send_command('timers create "Sleep II" 90 down')
+            send_command('timers create "Sleep II" 90 down')
         elseif spell.english == "Sleep" then
-            --   send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
             send_command('timers create "Sleep" 60 down')
         elseif spell.english == "Break" then
-        --   send_command('wait 20;gs c -cd '..spell.name..': [Off In 10 Seconds!]')
-          send_command('timers create "Break" 30 down')
+            send_command('timers create "Break" 30 down')
         elseif spell.english == "Bind" then
-        -- send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
-          send_command('timers create "Bind" 60 down')
+            send_command('timers create "Bind" 60 down')
         elseif spell.english =="Light Shot" then
             send_command('timers create "Light Shot" 60 down')
         end
     end
 end
 
+-- Offload to HelperFunctions?
 -- Determine whether we have sufficient ammo for the action being attempted.
 function do_bullet_checks(spell, spellMap, eventArgs)
     local bullet_name
@@ -774,6 +773,7 @@ function do_bullet_checks(spell, spellMap, eventArgs)
     end
 end
 
+-- Offload to HelperFunctions
 function special_ammo_check()
     -- Stop if Animikii/Hauksbok equipped
     if no_shoot_ammo:contains(player.equipment.ammo) then
