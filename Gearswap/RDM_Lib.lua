@@ -715,17 +715,13 @@ end
 function updateTimers(spell)
     if not spell.interrupted then
         if spell.english == "Sleep II" then
-        --   send_command('wait 35;gs c -cd '..spell.name..': [Off In 10~55 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~45 Seconds!]')
-          send_command('timers create "Sleep II" 90 down')
+            send_command('timers create "Sleep II" 90 down')
         elseif spell.english == "Sleep" then
-            --   send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
             send_command('timers create "Sleep" 60 down')
         elseif spell.english == "Break" then
-        --   send_command('wait 20;gs c -cd '..spell.name..': [Off In 10 Seconds!]')
-          send_command('timers create "Break" 30 down')
+            send_command('timers create "Break" 30 down')
         elseif spell.english == "Bind" then
-        -- send_command('wait 20;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
-          send_command('timers create "Bind" 60 down')
+            send_command('timers create "Bind" 60 down')
         end
     end
 end

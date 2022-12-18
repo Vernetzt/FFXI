@@ -384,21 +384,7 @@ function aftercast(spell)
     updateDualWield()
     updateAftermath()
     
-    -- updateTimers()
-    if not spell.interrupted then
-        if spell.english == "Sheep Song" then
-            send_command('wait 30;gs c -cd '..spell.name..': [Off In 10~30 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~20 Seconds!]')
-            send_command('timers create "Sheep Song" 40 down')
-        elseif spell.english == "Yawn" then
-            send_command('wait 60;gs c -cd '..spell.name..': [Off In 10~30 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~20 Seconds!]')
-            send_command('timers create "Yawn" 70 down')
-        elseif spell.english == "Dream Flower" then
-            send_command('wait 80;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
-            send_command('timers create "Dream Flower" 90 down')
-       elseif spell.english == "Entomb" then
-            send_command('timers create "Entomb Petrification" 60 down')
-        end 
-    end
+    updateTimers(spell)
 
     idle()
 
@@ -518,17 +504,6 @@ function self_command(command)
                     idle()
                 end
 
-            -- elseif commandArgs[2] == 'bow' then
-            --     bow:cycle()
-            --     RDM_lockMainHand(meleeing.value)
-            --     idle()
-
-            --     if bow.value == 'ON' then
-            --         enable('ranged','ammo')
-            --         equip({ranged=ambuBow})
-            --         disable('ranged','ammo')
-            --     end
-
             elseif commandArgs[2] == 'mainweapon' then
                 if commandArgs[3] then
                     mainWeapon:set(commandArgs[3])
@@ -644,38 +619,6 @@ function self_command(command)
     end
 end
 
-
--- Checks if auto and then sets var for engage logic.
--- Find better dynamic solution for better accuracy or rewrite buff logic.
--- function updateDualWield()
---     if dualwield.value == 'AUTO' then
---         if ( (buffactive[33] and not (buffactive.march or buffactive[580] or buffactive[604] or buffactive[228])) or --30% Haste and nothing else pretty much.
---             (buffactive[13] and (buffactive.march or buffactive[604]) and (buffactive[580] or buffactive[604] or buffactive[228])) or --Honor March/MG alone very roughly negates slow, leaving you just needing a second.
---             (buffactive[565] and buffactive.march == 2 and buffactive[580] and (buffactive[604] or buffactive[228])) ) then
---             -- 30% haste
---             currentHaste = 30
---         elseif ( (buffactive[33] and (buffactive[580] or buffactive.march or buffactive[604] or buffactive[228])) or -- Flutter and Geo or march or MG or embrava
---                 (buffactive[580] and (buffactive.march or buffactive[604] or buffactive[228])) or -- Geo and march or MG or embrava
---                 (buffactive.march == 2 and (buffactive[604] or buffactive[228])) or -- March x2 and MG or Embrava
---                 (buffactive[13] and (buffactive.march == 2 or buffactive[580]) and (buffactive[604] or buffactive[228])) ) then -- Slow, but likez the mad buffs 'n shiz, yo.
---             -- Capped Haste?
---             currentHaste = 47
---         end
---     else
---         -- Defaulting for next use.
---         currentHaste = 30
---     end
--- end
-
--- function updateDualWield()
---     if dualwield.value == 'AUTO' then
---         currentHaste = get_haste_value()
---     else
---         -- Defaulting for next use.
---         currentHaste = 30
---     end
--- end
-
 function updateAftermath(name, gain)
     if buffactive["aftermath: Lv.3"] and player.equipment.main == 'Tizona' then
         TizonaAM3 = true
@@ -722,13 +665,10 @@ end
 function updateTimers(spell)
     if not spell.interrupted then
         if spell.english == "Sheep Song" then
-            -- send_command('wait 30;gs c -cd '..spell.name..': [Off In 10~30 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~20 Seconds!]')
             send_command('timers create "Sheep Song" 40 down')
         elseif spell.english == "Yawn" then
-            -- send_command('wait 60;gs c -cd '..spell.name..': [Off In 10~30 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~20 Seconds!]')
             send_command('timers create "Yawn" 70 down')
         elseif spell.english == "Dream Flower" then
-            -- send_command('wait 80;gs c -cd '..spell.name..': [Off In 10~40 Seconds!];wait 10;gs c -cd '..spell.name..': [Off In 0~30 Seconds!]')
             send_command('timers create "Dream Flower" 90 down')
        elseif spell.english == "Entomb" then
             send_command('timers create "Entomb Petrification" 60 down')

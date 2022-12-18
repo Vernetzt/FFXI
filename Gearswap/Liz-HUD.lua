@@ -541,7 +541,7 @@ function validateTextInformation()
     end
     main_text_hud.element_color = Colors[elements.current]
     main_text_hud.enspell_color = Colors[enspellElements.current]
-		main_text_hud.enspell_color = Colors[quickdrawElements.current]
+		-- main_text_hud.enspell_color = Colors[quickdrawElements.current]
     main_text_hud.sc_element_color = scColor
 end
 

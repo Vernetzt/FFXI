@@ -2,7 +2,7 @@ version = "3.0"
 
 -- Saying hello
 pName = player.name
-windower.add_to_chat(8,'----- Welcome back to your RDM.lua, '..pName..' -----')
+windower.add_to_chat(8,'----- Welcome back to your COR.lua, '..pName..' -----')
 
 -- We're RDM so we're using Carm legs.
 runspeedslot = 'legs'
@@ -83,8 +83,12 @@ function precast(spell)
     local enfeebMap = get_enfeeb_map(spell)
 	local spell_recasts = windower.ffxi.get_spell_recasts()
 
+    if spell.action_type == 'Ranged Attack' or spell.type == 'WeaponSkill' or spell.type == 'CorsairShot' then
+        do_bullet_checks(spell, spellMap)
+    end
+
     -- Check that proper ammo is available if we're using ranged attacks or similar.
-    do_bullet_checks(spell, spellMap)
+    -- do_bullet_checks(spell, spellMap)
 
     -- Auto use Echo Drops if you are trying to cast while silenced --    
     if spell.action_type == 'Magic' and buffactive['Silence'] then 
@@ -166,7 +170,7 @@ function precast(spell)
         if spell.name == 'Stoneskin' then
          
             windower.ffxi.cancel_buff(37)--[[Cancels stoneskin, not delayed incase you get a Quick Cast]]
-            equip(sets.precast.stoneskin)
+            equip(sets.precast.casting)
              
         -- Cure Precast
         elseif spell.name:match('Cure') or spell.name:match('Cura') then
@@ -174,7 +178,7 @@ function precast(spell)
 
         -- Enhancing Magic
         elseif spell.skill == 'Enhancing Magic' then
-            equip(sets.precast.enhancing)            
+            equip(sets.precast.casting)            
             if spell.target.type == 'SELF' and spell.name == 'Sneak' then
                 windower.ffxi.cancel_buff(71)--[[Cancels Sneak]]
             end
@@ -202,6 +206,19 @@ function precast(spell)
     if spell.english == 'Fold' and buffactive['Bust'] == 2 then
         if sets.precast.FoldDoubleBust then
             equip(sets.precast.FoldDoubleBust)
+        end
+    end
+
+
+    -- Weapon Skills
+    -- Not sure if needed to fix bullet
+    if spell.type == 'WeaponSkill' then
+        if sets.me[spell.name] then
+            equip(sets.me[spell.name])
+    
+            if elemental_ws:contains(spell.name) then
+                SashLogic(spell)
+            end
         end
     end
 
@@ -248,6 +265,9 @@ function midcast(spell)
                 equip(sets.midcast.Quickdraw.Potency)
             elseif quickdrawModes.value == 'STP' then
                 equip(sets.midcast.Quickdraw.STP)
+            elseif quickdrawModes.value == 'Enhance' then
+                equip(sets.midcast.Quickdraw.Potency)
+                equip(sets.midcast.Quickdraw.Enhance)
             end
         end
     elseif spell.action_type == 'Ranged Attack' then
@@ -309,7 +329,13 @@ function midcast(spell)
         end
 
     elseif spell.type == 'JobAbility' then
-        equip(sets.me.idle.dt)
+        if sets.precast[spell.name] then
+            equip(sets.precast[spell.name])
+        elseif sets.precast[spellMap] then
+            equip(sets.precast[spellMap])
+        else
+            equip(sets.me.idle.dt)
+        end
 
     -- Fail safe
     elseif spell.type ~= "WeaponSkill" then
@@ -347,7 +373,7 @@ end
 function aftercast(spell)
 
     -- Then initiate idle function to check which set should be equipped
-    if meleeing.value == "AUTO" then
+    if meleeing.value == "ON" then
         -- if player.tp >= lockWeaponTP or meleeModes.value == 'zeroTP' then
         if player.tp >= lockWeaponTP then
             lock:set('ON')
@@ -367,7 +393,6 @@ end
 -- NEW-- Remove chat confirms at a later date
 function idle()
     -- This function is called after every action, and handles which set to equip depending on what we're doing
-    -- We check if we're meleeing because we don't want to idle in melee gear when we're only engaged for trusts
     if player.status=='Engaged' then
         if subWeapon.current:match('Shield') or subWeapon.current:match('Bulwark') or subWeapon.current:match('Buckler') or subWeapon.current:match('Grip') or subWeapon.current:match('Strap') then
             equip(sets.me.melee[meleeModes.value..'sw'])
@@ -700,7 +725,7 @@ end
 
 -- Offload to HelperFunctions?
 -- Determine whether we have sufficient ammo for the action being attempted.
-function do_bullet_checks(spell, spellMap, eventArgs)
+function do_bullet_checks(spell, spellMap)
     local bullet_name
     local bullet_min_count = 1
 
@@ -726,7 +751,7 @@ function do_bullet_checks(spell, spellMap, eventArgs)
         end
     end
 
-    local available_bullets = player.inventory[bullet_name] or player.wardrobe[bullet_name]
+    local available_bullets = player.inventory[bullet_name] or player.wardrobe[bullet_name] or player.wardrobe2[bullet_name] or player.wardrobe3[bullet_name] or player.wardrobe4[bullet_name] or player.wardrobe5[bullet_name] or player.wardrobe6[bullet_name] or player.wardrobe7[bullet_name] or player.wardrobe8[bullet_name]
 
     -- If no ammo is available, give appropriate warning and end.
     if not available_bullets then

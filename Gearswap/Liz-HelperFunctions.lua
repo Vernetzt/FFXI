@@ -246,11 +246,13 @@ if autorunspeed then
 end
 
 windower.raw_register_event('prerender', function()
-    if not (os.clock() > tickdelay) then return end
-
-    -- if auto_CP_Cape then
-    --     auto_cp()
-    -- end
+    -- if not (os.clock() > tickdelay) then return end
+    if os.clock() > tickdelay then
+        tickdelay = os.clock() + 1
+        if auto_CP_Cape then
+            auto_cp()
+        end
+    end
 
     if MB_Window > 0 then
         MB_Window = 14 - (os.time() - MB_Time)
@@ -267,7 +269,6 @@ windower.raw_register_event('prerender', function()
         end
     end
     validateTextInformation()
-    tickdelay = os.clock() + .5
 end)
 
 function auto_cp()
@@ -280,8 +281,8 @@ function auto_cp()
             if windower.ffxi.get_mob_by_target('t') then -- Sanity Check 
                 if #monsterToCheck.name:split(' ') >= 2 then
                     monsterName = T(monsterToCheck.name:split(' '))
-                    if monsterName[1] == "Apex" then
-                        if monsterToCheck.hpp < 15 then --Check mobs HP Percentage if below 15 then equip CP cape 
+                    if monsterName[1] == "Locus" then
+                        if monsterToCheck.hpp < 20 then --Check mobs HP Percentage if below 15 then equip CP cape
                             equip({ back = CP_CAPE }) 
                             disable("back") --Lock back
                         else
@@ -590,9 +591,6 @@ function get_flury_value(name,gain)
             flurry = 0
             -- add_to_chat(122, "Flurry status cleared.")
         end
-        -- if not midaction() then
-        --     handle_equipping_gear(player.status)
-        -- end
     end
 end
 
@@ -612,12 +610,18 @@ windower.register_event('incoming text', function(old, new, color)
   end)
   
   -- COR Roll Info
-  windower.register_event('action', function(act)
+  windower.raw_register_event('action', function(act)
     if act.category == 6 and table.containskey(rolls, act.param) then
         local playerID = windower.ffxi.get_player().id
         local rollActor = act.actor_id
-        local rollerName = windower.ffxi.get_mob_by_id(rollActor).name
         local rollerInParty = windower.ffxi.get_mob_by_id(rollActor).in_party
+        
+        
+        -- if rollActor == playerID or rollerInParty then
+        -- end
+        
+        -- Clean unneeded vars
+        local rollerName = windower.ffxi.get_mob_by_id(rollActor).name
         local rollID = act.param
         local rollNum = act.targets[1].actions[1].param
         local rollName = rolls[rollID].en

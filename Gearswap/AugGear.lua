@@ -125,30 +125,32 @@ if  ( player.main_job == "BLU" or
 
   Herc.Head.FC = { name="Herculean Helm", augments={'"Mag.Atk.Bns."+3','"Fast Cast"+5','STR+5',} }
   Herc.Hands.Idle = { name="Herculean Gloves", augments={'Pet: DEX+15','DEX+10','"Refresh"+2','Accuracy+1 Attack+1','Mag. Acc.+5 "Mag.Atk.Bns."+5',} }
-  Herc.Hands.WSD = { name="Herculean Gloves", augments={'Mag. Acc.+1','Crit. hit damage +2%','Weapon skill damage +7%','Accuracy+6 Attack+6','Mag. Acc.+12 "Mag.Atk.Bns."+12',} }
   Herc.Legs.Idle = { name="Herculean Trousers", augments={'MND+13','Mag. Acc.+21','"Refresh"+1','Mag. Acc.+19 "Mag.Atk.Bns."+19',}}
   Herc.Legs.Phalanx = { name="Herculean Trousers", augments={'Pet: "Dbl. Atk."+1','MND+8','Phalanx +3','Mag. Acc.+18 "Mag.Atk.Bns."+18',}}
   Herc.Feet.Idle = { name="Herculean Boots", augments={'MND+3','"Rapid Shot"+4','"Refresh"+2','Mag. Acc.+11 "Mag.Atk.Bns."+11',} }
   Herc.Feet.TP = { name="Herculean Boots", augments={'"Triple Atk."+3','Accuracy+11','Attack+14',} }
   Herc.Feet.TH = { name="Herculean Boots", augments={'STR+3','Mag. Acc.+24','"Treasure Hunter"+2','Accuracy+4 Attack+4',}}
+
+  Herc.Head.MWSD = { name="Herculean Helm", augments={'"Mag.Atk.Bns."+25','Weapon skill damage +3%','STR+6',}}
+  Herc.Legs.MWSD = { name="Herculean Trousers", augments={'Accuracy+14 Attack+14','Magic dmg. taken -4%','Weapon skill damage +10%','Mag. Acc.+14 "Mag.Atk.Bns."+14',}}
 end
 
 if  ( player.main_job == "BLU" or
       player.main_job == "COR" ) then 
 
   Adhe.Head.B =	{ name="Adhemar Bonnet +1", augments={'STR+12','DEX+12','Attack+20',}}
-  -- Adhe.Head.B = { name="Adhemar Bonnet +1", augments={'STR+12','DEX+12','Attack+20',}}
   Adhe.Body.B = { name="Adhemar Jacket +1", augments={'STR+12','DEX+12','Attack+20',}}
   Adhe.Hands.A =	{ name="Adhemar Wrist. +1", augments={'DEX+12','AGI+12','Accuracy+20',}}
 end
 
 if  ( player.main_job == "RDM" or
-      player.main_job == "BLU" ) then 
+      player.main_job == "BLU" or
+      player.main_job == "COR" ) then 
 
   -- Carm.Head.D =	{ name="Carmine Mask +1", augments={'Accuracy+20','Mag. Acc.+12','"Fast Cast"+4',}}
   Carm.Legs.D	=	{ name="Carmine Cuisses +1", augments={'Accuracy+20','Attack+12','"Dual Wield"+6',}}
+  Carm.Hands.D = { name="Carmine Fin. Ga. +1", augments={'Rng.Atk.+20','"Mag.Atk.Bns."+12','"Store TP"+6',}}
   Carm.Feet.B	=	{ name="Carmine Greaves +1", augments={'HP+80','MP+80','Phys. dmg. taken -4%',}}
-  -- Carm.Feet.B = { name="Carmine Greaves +1", augments={'Accuracy+12','DEX+12','MND+20',}}
 end
 
 if  ( player.main_job == "RDM" or
